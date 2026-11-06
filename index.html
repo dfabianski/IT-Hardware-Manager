@@ -38,9 +38,9 @@
             transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .floor-desk:hover .desk-surface {
-            filter: drop-shadow(0 6px 12px rgba(0, 89, 140, 0.25));
-            stroke: #00598C;
-            stroke-width: 2px;
+            filter: drop-shadow(0 6px 14px rgba(0, 89, 140, 0.25));
+            stroke: #00598C !important;
+            stroke-width: 2px !important;
         }
         .floor-desk:hover .desk-chair {
             transform: translate(0, -2px);
@@ -50,14 +50,6 @@
             stroke-width: 2.5px !important;
             fill: #EFF6FF !important;
             filter: drop-shadow(0 0 10px rgba(0, 89, 140, 0.35)) !important;
-        }
-        @keyframes subtle-pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.8; transform: scale(1.08); }
-        }
-        .active-pulse {
-            animation: subtle-pulse 2.5s infinite ease-in-out;
-            transform-origin: center;
         }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #F1F5F9; }
@@ -157,7 +149,7 @@
         </div>
 
         <!-- ============================================================== -->
-        <!-- ARCHITEKTONISCHER SITZPLAN (EXAKT NACH SCHNITTPLAN)           -->
+        <!-- CLEAN ARCHITECTURAL VECTOR SITZPLAN                            -->
         <!-- ============================================================== -->
         <section id="officeMapSection" class="bg-white rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden transition-all duration-300">
             <div class="px-6 py-4 border-b border-slate-200/80 bg-slate-50/70 flex flex-wrap justify-between items-center gap-3">
@@ -166,19 +158,19 @@
                         🗺️
                     </div>
                     <div>
-                        <h2 class="text-sm font-bold text-slate-900 tracking-tight">Interaktiver Büro-Sitzplan (Zentrale Neuss-Holzheim)</h2>
-                        <p class="text-xs text-slate-500">Klicke auf einen Sitzplatz, um zugewiesene Mitarbeiter & Hardware anzuzeigen</p>
+                        <h2 class="text-sm font-bold text-slate-900 tracking-tight">Büro-Sitzplan & Hardware-Zuordnung</h2>
+                        <p class="text-xs text-slate-500">Klicke auf einen Arbeitsplatz, um die dort verbuchte Hardware & Mitarbeiter einzusehen</p>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-5 text-xs font-medium">
                     <div class="flex items-center gap-1.5">
-                        <span class="w-3 h-3 rounded-full bg-[#00598C] shadow-xs"></span>
-                        <span class="text-slate-700">Belegt mit Hardware</span>
+                        <span class="w-3 h-3 rounded-md bg-[#00598C] shadow-xs"></span>
+                        <span class="text-slate-700 font-semibold">Belegt mit Hardware</span>
                     </div>
                     <div class="flex items-center gap-1.5">
-                        <span class="w-3 h-3 rounded-full bg-emerald-500 shadow-xs"></span>
-                        <span class="text-slate-700">Bereit / Frei</span>
+                        <span class="w-3 h-3 rounded-md bg-white border border-slate-300"></span>
+                        <span class="text-slate-500">Frei / Unbesetzt</span>
                     </div>
                     <button onclick="toggleMapCollapse()" id="btnCollapseMap" class="text-xs bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 px-3 py-1.5 rounded-xl font-medium transition shadow-2xs">
                         Plan minimieren
@@ -204,23 +196,21 @@
                         <rect x="20" y="20" width="960" height="580" rx="16" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2"/>
                         <rect x="20" y="20" width="960" height="580" rx="16" fill="url(#floorTiles)" opacity="0.65"/>
 
-                        <!-- ================= RÄUME & WÄNDE ================= -->
+                        <!-- ================= RÄUME & ZONEN ================= -->
                         
-                        <!-- 1. BÜRO NORD (Verglaste Büros links oben, violette Zone) -->
-                        <!-- Oberes Büro: Plätze 3, 4, 5 -->
-                        <rect x="25" y="25" width="180" height="135" fill="#FFFFFF" stroke="#818CF8" stroke-width="2.5" rx="8"/>
-                        <text x="36" y="44" fill="#6366F1" font-size="10" font-weight="800">BÜRO NORD (3-5)</text>
+                        <!-- 1. BÜRO NORD (Verglaste Büros links oben) -->
+                        <rect x="25" y="25" width="180" height="135" fill="#FFFFFF" stroke="#94A3B8" stroke-width="2" rx="8"/>
+                        <text x="36" y="44" fill="#64748B" font-size="10" font-weight="700">BÜRO NORD (OBEN)</text>
 
-                        <!-- Unteres Büro: Plätze 1 & 2 -->
-                        <rect x="25" y="160" width="180" height="125" fill="#FFFFFF" stroke="#818CF8" stroke-width="2.5" rx="8"/>
-                        <text x="36" y="178" fill="#6366F1" font-size="10" font-weight="800">BÜRO NORD (1-2)</text>
+                        <rect x="25" y="160" width="180" height="125" fill="#FFFFFF" stroke="#94A3B8" stroke-width="2" rx="8"/>
+                        <text x="36" y="178" fill="#64748B" font-size="10" font-weight="700">BÜRO NORD (UNTEN)</text>
 
                         <!-- 2. KONFERENZRAUM UNTEN LINKS -->
-                        <rect x="25" y="445" width="335" height="150" fill="#FFFFFF" stroke="#10B981" stroke-width="2.5" rx="8"/>
+                        <rect x="25" y="445" width="335" height="150" fill="#FFFFFF" stroke="#94A3B8" stroke-width="2" rx="8"/>
                         <text x="40" y="468" fill="#00598C" font-size="12" font-weight="800">KONFERENZRAUM</text>
                         <text x="40" y="484" fill="#94A3B8" font-size="9" font-weight="600">Boardroom & Medientechnik</text>
 
-                        <!-- 3. ARCHIV / IT & FITNESS -->
+                        <!-- 3. ARCHIV / IT-SERVER & FITNESS -->
                         <rect x="360" y="445" width="265" height="150" fill="#FFFFFF" stroke="#94A3B8" stroke-width="2" rx="6"/>
                         <text x="375" y="468" fill="#64748B" font-size="11" font-weight="700">ARCHIV & IT-SERVER</text>
                         <rect x="375" y="490" width="30" height="55" rx="4" fill="#E2E8F0" stroke="#94A3B8"/>
@@ -233,7 +223,7 @@
                         <rect x="800" y="380" width="175" height="215" fill="url(#woodPlanks)"/>
                         <text x="825" y="415" fill="#64748B" font-size="12" font-weight="800">KÜCHE / CASINO</text>
 
-                        <!-- Lounge, Phonebox & Theke -->
+                        <!-- Lounge & Phonebox -->
                         <path d="M 640 45 C 640 45, 680 40, 715 65 C 740 85, 750 120, 745 140" fill="none" stroke="#A9BDD7" stroke-width="20" stroke-linecap="round"/>
                         <circle cx="685" cy="100" r="14" fill="#CBD5E1"/>
                         <text x="650" y="165" fill="#94A3B8" font-size="10" font-weight="600">Lounge</text>
@@ -242,183 +232,197 @@
                         <circle cx="580" cy="270" r="14" fill="#FFFFFF" stroke="#94A3B8"/>
                         <text x="566" y="274" fill="#00598C" font-size="9" font-weight="800">BOX</text>
 
-                        <!-- ================= SITZPLÄTZE (EXAKTE NUMMERIERUNG) ================= -->
+                        <!-- ================= SITZPLÄTZE (SCHLICHTES ARCHITEKTUR-DESIGN) ================= -->
 
                         <!-- BÜRO NORD (OBEN): PLATZ 5, 4, 3 -->
                         <!-- Platz 5 (Wandplatz oben links) -->
                         <g class="floor-desk" onclick="handleDeskClick('AP-05')" id="svg-desk-AP-05">
-                            <rect class="desk-surface" x="40" y="55" width="46" height="30" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
-                            <rect class="desk-chair" x="53" y="90" width="16" height="12" rx="3" fill="#64748B"/>
-                            <circle class="desk-status-circle" cx="53" cy="55" r="13" fill="#EF4444"/>
-                            <text x="53" y="59" fill="#FFFFFF" font-size="11" font-weight="800" text-anchor="middle">5</text>
+                            <rect class="desk-surface" x="40" y="55" width="50" height="34" rx="5" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-chair" x="57" y="94" width="16" height="12" rx="3" fill="#64748B"/>
+                            <rect x="52" y="59" width="26" height="3" rx="1" fill="#94A3B8"/>
+                            <text class="desk-label-text" x="65" y="77" fill="#00598C" font-size="10" font-weight="800" text-anchor="middle">5</text>
+                            <circle class="desk-status-dot" cx="82" cy="62" r="3" fill="#CBD5E1"/>
                         </g>
 
                         <!-- Platz 4 (Doppeltisch oben) -->
                         <g class="floor-desk" onclick="handleDeskClick('AP-04')" id="svg-desk-AP-04">
-                            <rect class="desk-surface" x="115" y="55" width="46" height="34" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
-                            <rect class="desk-chair" x="130" y="35" width="16" height="12" rx="3" fill="#64748B"/>
-                            <circle class="desk-status-circle" cx="138" cy="72" r="13" fill="#EF4444"/>
-                            <text x="138" y="76" fill="#FFFFFF" font-size="11" font-weight="800" text-anchor="middle">4</text>
+                            <rect class="desk-surface" x="115" y="55" width="50" height="34" rx="5" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-chair" x="132" y="35" width="16" height="12" rx="3" fill="#64748B"/>
+                            <rect x="127" y="83" width="26" height="3" rx="1" fill="#94A3B8"/>
+                            <text class="desk-label-text" x="140" y="73" fill="#00598C" font-size="10" font-weight="800" text-anchor="middle">4</text>
+                            <circle class="desk-status-dot" cx="157" cy="62" r="3" fill="#CBD5E1"/>
                         </g>
 
                         <!-- Platz 3 (Doppeltisch unten) -->
                         <g class="floor-desk" onclick="handleDeskClick('AP-03')" id="svg-desk-AP-03">
-                            <rect class="desk-surface" x="115" y="95" width="46" height="34" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
-                            <rect class="desk-chair" x="130" y="135" width="16" height="12" rx="3" fill="#64748B"/>
-                            <circle class="desk-status-circle" cx="138" cy="112" r="13" fill="#EF4444"/>
-                            <text x="138" y="116" fill="#FFFFFF" font-size="11" font-weight="800" text-anchor="middle">3</text>
+                            <rect class="desk-surface" x="115" y="95" width="50" height="34" rx="5" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-chair" x="132" y="135" width="16" height="12" rx="3" fill="#64748B"/>
+                            <rect x="127" y="98" width="26" height="3" rx="1" fill="#94A3B8"/>
+                            <text class="desk-label-text" x="140" y="117" fill="#00598C" font-size="10" font-weight="800" text-anchor="middle">3</text>
+                            <circle class="desk-status-dot" cx="157" cy="122" r="3" fill="#CBD5E1"/>
                         </g>
 
                         <!-- BÜRO NORD (UNTEN): PLATZ 2 & 1 -->
                         <!-- Platz 2 (Oben) -->
                         <g class="floor-desk" onclick="handleDeskClick('AP-02')" id="svg-desk-AP-02">
-                            <rect class="desk-surface" x="55" y="190" width="48" height="35" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
-                            <rect class="desk-chair" x="108" y="198" width="12" height="16" rx="3" fill="#64748B"/>
-                            <circle class="desk-status-circle" cx="72" cy="190" r="13" fill="#EF4444"/>
-                            <text x="72" y="194" fill="#FFFFFF" font-size="11" font-weight="800" text-anchor="middle">2</text>
+                            <rect class="desk-surface" x="50" y="190" width="50" height="34" rx="5" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-chair" x="106" y="199" width="12" height="16" rx="3" fill="#64748B"/>
+                            <rect x="54" y="197" width="3" height="20" rx="1" fill="#94A3B8"/>
+                            <text class="desk-label-text" x="75" y="211" fill="#00598C" font-size="10" font-weight="800" text-anchor="middle">2</text>
+                            <circle class="desk-status-dot" cx="92" cy="198" r="3" fill="#CBD5E1"/>
                         </g>
 
                         <!-- Platz 1 (Unten) -->
                         <g class="floor-desk" onclick="handleDeskClick('AP-01')" id="svg-desk-AP-01">
-                            <rect class="desk-surface" x="55" y="232" width="48" height="35" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
-                            <rect class="desk-chair" x="108" y="240" width="12" height="16" rx="3" fill="#64748B"/>
-                            <circle class="desk-status-circle" cx="72" cy="245" r="13" fill="#EF4444"/>
-                            <text x="72" y="249" fill="#FFFFFF" font-size="11" font-weight="800" text-anchor="middle">1</text>
+                            <rect class="desk-surface" x="50" y="232" width="50" height="34" rx="5" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-chair" x="106" y="241" width="12" height="16" rx="3" fill="#64748B"/>
+                            <rect x="54" y="239" width="3" height="20" rx="1" fill="#94A3B8"/>
+                            <text class="desk-label-text" x="75" y="253" fill="#00598C" font-size="10" font-weight="800" text-anchor="middle">1</text>
+                            <circle class="desk-status-dot" cx="92" cy="240" r="3" fill="#CBD5E1"/>
                         </g>
 
                         <!-- FENSTERFRONT WEST (UNTEN LINKS): PLATZ 8 & 7 -->
                         <!-- Platz 8 (Oben) -->
                         <g class="floor-desk" onclick="handleDeskClick('AP-08')" id="svg-desk-AP-08">
-                            <rect class="desk-surface" x="45" y="325" width="48" height="35" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
-                            <rect class="desk-chair" x="98" y="333" width="12" height="16" rx="3" fill="#64748B"/>
-                            <circle class="desk-status-circle" cx="62" cy="325" r="13" fill="#10B981"/>
-                            <text x="62" y="329" fill="#FFFFFF" font-size="11" font-weight="800" text-anchor="middle">8</text>
+                            <rect class="desk-surface" x="50" y="325" width="50" height="34" rx="5" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-chair" x="106" y="334" width="12" height="16" rx="3" fill="#64748B"/>
+                            <rect x="54" y="332" width="3" height="20" rx="1" fill="#94A3B8"/>
+                            <text class="desk-label-text" x="75" y="346" fill="#00598C" font-size="10" font-weight="800" text-anchor="middle">8</text>
+                            <circle class="desk-status-dot" cx="92" cy="333" r="3" fill="#CBD5E1"/>
                         </g>
 
-                        <!-- Platz 7 (Unten mit Flagge) -->
+                        <!-- Platz 7 (Unten) -->
                         <g class="floor-desk" onclick="handleDeskClick('AP-07')" id="svg-desk-AP-07">
-                            <rect class="desk-surface" x="45" y="367" width="48" height="35" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
-                            <rect class="desk-chair" x="98" y="375" width="12" height="16" rx="3" fill="#64748B"/>
-                            <!-- Kreis mit Flaggen-Design -->
-                            <circle class="desk-status-circle" cx="62" cy="380" r="13" fill="#10B981"/>
-                            <clipPath id="flagClip"><circle cx="62" cy="380" r="13"/></clipPath>
-                            <g clip-path="url(#flagClip)">
-                                <rect x="49" y="367" width="8.6" height="26" fill="#009246"/>
-                                <rect x="57.6" y="367" width="8.6" height="26" fill="#FFFFFF"/>
-                                <rect x="66.2" y="367" width="8.8" height="26" fill="#CE2B37"/>
-                            </g>
-                            <circle cx="62" cy="380" r="13" fill="none" stroke="#FFFFFF" stroke-width="1.5"/>
+                            <rect class="desk-surface" x="50" y="367" width="50" height="34" rx="5" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-chair" x="106" y="376" width="12" height="16" rx="3" fill="#64748B"/>
+                            <rect x="54" y="374" width="3" height="20" rx="1" fill="#94A3B8"/>
+                            <text class="desk-label-text" x="75" y="388" fill="#00598C" font-size="10" font-weight="800" text-anchor="middle">7</text>
+                            <circle class="desk-status-dot" cx="92" cy="375" r="3" fill="#CBD5E1"/>
                         </g>
 
                         <!-- 4ER-INSEL NORD-WEST (OPEN SPACE): JB, 11, 9, 12 -->
                         <line x1="255" y1="110" x2="335" y2="110" stroke="#A9BDD7" stroke-width="3" stroke-linecap="round"/>
                         <!-- JB (Oben Links) -->
                         <g class="floor-desk" onclick="handleDeskClick('AP-JB')" id="svg-desk-AP-JB">
-                            <rect class="desk-surface" x="250" y="65" width="44" height="40" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-surface" x="250" y="65" width="44" height="40" rx="5" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
                             <rect class="desk-chair" x="264" y="44" width="16" height="12" rx="3" fill="#64748B"/>
-                            <circle class="desk-status-circle" cx="250" cy="65" r="13" fill="#EF4444"/>
-                            <text x="250" y="69" fill="#FFFFFF" font-size="10" font-weight="800" text-anchor="middle">JB</text>
+                            <rect x="258" y="99" width="28" height="3" rx="1" fill="#94A3B8"/>
+                            <text class="desk-label-text" x="272" y="85" fill="#00598C" font-size="9" font-weight="800" text-anchor="middle">JB</text>
+                            <circle class="desk-status-dot" cx="286" cy="72" r="3" fill="#CBD5E1"/>
                         </g>
 
                         <!-- 11 (Oben Rechts) -->
                         <g class="floor-desk" onclick="handleDeskClick('AP-11')" id="svg-desk-AP-11">
-                            <rect class="desk-surface" x="298" y="65" width="44" height="40" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-surface" x="298" y="65" width="44" height="40" rx="5" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
                             <rect class="desk-chair" x="312" y="44" width="16" height="12" rx="3" fill="#64748B"/>
-                            <circle class="desk-status-circle" cx="316" cy="65" r="13" fill="#10B981"/>
-                            <text x="316" y="69" fill="#FFFFFF" font-size="11" font-weight="800" text-anchor="middle">11</text>
+                            <rect x="306" y="99" width="28" height="3" rx="1" fill="#94A3B8"/>
+                            <text class="desk-label-text" x="320" y="85" fill="#00598C" font-size="10" font-weight="800" text-anchor="middle">11</text>
+                            <circle class="desk-status-dot" cx="334" cy="72" r="3" fill="#CBD5E1"/>
                         </g>
 
                         <!-- 9 (Unten Links) -->
                         <g class="floor-desk" onclick="handleDeskClick('AP-09')" id="svg-desk-AP-09">
-                            <rect class="desk-surface" x="250" y="115" width="44" height="40" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-surface" x="250" y="115" width="44" height="40" rx="5" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
                             <rect class="desk-chair" x="264" y="160" width="16" height="12" rx="3" fill="#64748B"/>
-                            <circle class="desk-status-circle" cx="250" cy="130" r="13" fill="#10B981"/>
-                            <text x="250" y="134" fill="#FFFFFF" font-size="11" font-weight="800" text-anchor="middle">9</text>
+                            <rect x="258" y="118" width="28" height="3" rx="1" fill="#94A3B8"/>
+                            <text class="desk-label-text" x="272" y="141" fill="#00598C" font-size="10" font-weight="800" text-anchor="middle">9</text>
+                            <circle class="desk-status-dot" cx="286" cy="122" r="3" fill="#CBD5E1"/>
                         </g>
 
                         <!-- 12 (Unten Rechts) -->
                         <g class="floor-desk" onclick="handleDeskClick('AP-12')" id="svg-desk-AP-12">
-                            <rect class="desk-surface" x="298" y="115" width="44" height="40" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-surface" x="298" y="115" width="44" height="40" rx="5" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
                             <rect class="desk-chair" x="312" y="160" width="16" height="12" rx="3" fill="#64748B"/>
-                            <circle class="desk-status-circle" cx="316" cy="130" r="13" fill="#10B981"/>
-                            <text x="316" y="134" fill="#FFFFFF" font-size="11" font-weight="800" text-anchor="middle">12</text>
+                            <rect x="306" y="118" width="28" height="3" rx="1" fill="#94A3B8"/>
+                            <text class="desk-label-text" x="320" y="141" fill="#00598C" font-size="10" font-weight="800" text-anchor="middle">12</text>
+                            <circle class="desk-status-dot" cx="334" cy="122" r="3" fill="#CBD5E1"/>
                         </g>
 
                         <!-- 4ER-INSEL NORD-OST (OPEN SPACE): 13, 15, 14, 16 -->
                         <line x1="445" y1="110" x2="525" y2="110" stroke="#A9BDD7" stroke-width="3" stroke-linecap="round"/>
                         <!-- 13 (Oben Links) -->
                         <g class="floor-desk" onclick="handleDeskClick('AP-13')" id="svg-desk-AP-13">
-                            <rect class="desk-surface" x="440" y="65" width="44" height="40" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-surface" x="440" y="65" width="44" height="40" rx="5" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
                             <rect class="desk-chair" x="454" y="44" width="16" height="12" rx="3" fill="#64748B"/>
-                            <circle class="desk-status-circle" cx="440" cy="65" r="13" fill="#10B981"/>
-                            <text x="440" y="69" fill="#FFFFFF" font-size="11" font-weight="800" text-anchor="middle">13</text>
+                            <rect x="448" y="99" width="28" height="3" rx="1" fill="#94A3B8"/>
+                            <text class="desk-label-text" x="462" y="85" fill="#00598C" font-size="10" font-weight="800" text-anchor="middle">13</text>
+                            <circle class="desk-status-dot" cx="476" cy="72" r="3" fill="#CBD5E1"/>
                         </g>
 
                         <!-- 15 (Oben Rechts) -->
                         <g class="floor-desk" onclick="handleDeskClick('AP-15')" id="svg-desk-AP-15">
-                            <rect class="desk-surface" x="488" y="65" width="44" height="40" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-surface" x="488" y="65" width="44" height="40" rx="5" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
                             <rect class="desk-chair" x="502" y="44" width="16" height="12" rx="3" fill="#64748B"/>
-                            <circle class="desk-status-circle" cx="506" cy="65" r="13" fill="#10B981"/>
-                            <text x="506" y="69" fill="#FFFFFF" font-size="11" font-weight="800" text-anchor="middle">15</text>
+                            <rect x="496" y="99" width="28" height="3" rx="1" fill="#94A3B8"/>
+                            <text class="desk-label-text" x="510" y="85" fill="#00598C" font-size="10" font-weight="800" text-anchor="middle">15</text>
+                            <circle class="desk-status-dot" cx="524" cy="72" r="3" fill="#CBD5E1"/>
                         </g>
 
                         <!-- 14 (Unten Links) -->
                         <g class="floor-desk" onclick="handleDeskClick('AP-14')" id="svg-desk-AP-14">
-                            <rect class="desk-surface" x="440" y="115" width="44" height="40" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-surface" x="440" y="115" width="44" height="40" rx="5" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
                             <rect class="desk-chair" x="454" y="160" width="16" height="12" rx="3" fill="#64748B"/>
-                            <circle class="desk-status-circle" cx="440" cy="130" r="13" fill="#10B981"/>
-                            <text x="440" y="134" fill="#FFFFFF" font-size="11" font-weight="800" text-anchor="middle">14</text>
+                            <rect x="448" y="118" width="28" height="3" rx="1" fill="#94A3B8"/>
+                            <text class="desk-label-text" x="462" y="141" fill="#00598C" font-size="10" font-weight="800" text-anchor="middle">14</text>
+                            <circle class="desk-status-dot" cx="476" cy="122" r="3" fill="#CBD5E1"/>
                         </g>
 
                         <!-- 16 (Unten Rechts) -->
                         <g class="floor-desk" onclick="handleDeskClick('AP-16')" id="svg-desk-AP-16">
-                            <rect class="desk-surface" x="488" y="115" width="44" height="40" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-surface" x="488" y="115" width="44" height="40" rx="5" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
                             <rect class="desk-chair" x="502" y="160" width="16" height="12" rx="3" fill="#64748B"/>
-                            <circle class="desk-status-circle" cx="506" cy="130" r="13" fill="#10B981"/>
-                            <text x="506" y="134" fill="#FFFFFF" font-size="11" font-weight="800" text-anchor="middle">16</text>
+                            <rect x="496" y="118" width="28" height="3" rx="1" fill="#94A3B8"/>
+                            <text class="desk-label-text" x="510" y="141" fill="#00598C" font-size="10" font-weight="800" text-anchor="middle">16</text>
+                            <circle class="desk-status-dot" cx="524" cy="122" r="3" fill="#CBD5E1"/>
                         </g>
 
                         <!-- SÜD-REIHE: 3x 2ER-BLÖCKE -->
                         <!-- Block 1: 6 & 5 -->
                         <g class="floor-desk" onclick="handleDeskClick('AP-S1-6')" id="svg-desk-AP-S1-6">
-                            <rect class="desk-surface" x="250" y="365" width="40" height="42" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-surface" x="250" y="365" width="40" height="42" rx="5" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
                             <rect class="desk-chair" x="228" y="377" width="14" height="18" rx="3" fill="#64748B"/>
-                            <circle class="desk-status-circle" cx="260" cy="375" r="13" fill="#10B981"/>
-                            <text x="260" y="379" fill="#FFFFFF" font-size="11" font-weight="800" text-anchor="middle">6</text>
+                            <rect x="284" y="375" width="3" height="22" rx="1" fill="#94A3B8"/>
+                            <text class="desk-label-text" x="267" y="390" fill="#00598C" font-size="10" font-weight="800" text-anchor="middle">6</text>
+                            <circle class="desk-status-dot" cx="258" cy="373" r="3" fill="#CBD5E1"/>
                         </g>
                         <g class="floor-desk" onclick="handleDeskClick('AP-S1-5')" id="svg-desk-AP-S1-5">
-                            <rect class="desk-surface" x="295" y="365" width="40" height="42" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-surface" x="295" y="365" width="40" height="42" rx="5" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
                             <rect class="desk-chair" x="343" y="377" width="14" height="18" rx="3" fill="#64748B"/>
-                            <circle class="desk-status-circle" cx="308" cy="375" r="13" fill="#10B981"/>
-                            <text x="308" y="379" fill="#FFFFFF" font-size="11" font-weight="800" text-anchor="middle">5</text>
+                            <rect x="300" y="375" width="3" height="22" rx="1" fill="#94A3B8"/>
+                            <text class="desk-label-text" x="318" y="390" fill="#00598C" font-size="10" font-weight="800" text-anchor="middle">5</text>
+                            <circle class="desk-status-dot" cx="327" cy="373" r="3" fill="#CBD5E1"/>
                         </g>
 
-                        <!-- Block 2: Foto (Links) & 3 (Rechts) -->
-                        <g class="floor-desk" onclick="handleDeskClick('AP-S2-L')" id="svg-desk-AP-S2-L">
-                            <rect class="desk-surface" x="420" y="365" width="40" height="42" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                        <!-- Block 2: 4 & 3 -->
+                        <g class="floor-desk" onclick="handleDeskClick('AP-S2-4')" id="svg-desk-AP-S2-4">
+                            <rect class="desk-surface" x="420" y="365" width="40" height="42" rx="5" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
                             <rect class="desk-chair" x="398" y="377" width="14" height="18" rx="3" fill="#64748B"/>
-                            <circle class="desk-status-circle" cx="430" cy="375" r="13" fill="#00598C"/>
-                            <text x="430" y="378" fill="#FFFFFF" font-size="9" font-weight="800" text-anchor="middle">Ort</text>
+                            <rect x="454" y="375" width="3" height="22" rx="1" fill="#94A3B8"/>
+                            <text class="desk-label-text" x="437" y="390" fill="#00598C" font-size="10" font-weight="800" text-anchor="middle">4</text>
+                            <circle class="desk-status-dot" cx="428" cy="373" r="3" fill="#CBD5E1"/>
                         </g>
                         <g class="floor-desk" onclick="handleDeskClick('AP-S2-3')" id="svg-desk-AP-S2-3">
-                            <rect class="desk-surface" x="465" y="365" width="40" height="42" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-surface" x="465" y="365" width="40" height="42" rx="5" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
                             <rect class="desk-chair" x="513" y="377" width="14" height="18" rx="3" fill="#64748B"/>
-                            <circle class="desk-status-circle" cx="478" cy="375" r="13" fill="#10B981"/>
-                            <text x="478" y="379" fill="#FFFFFF" font-size="11" font-weight="800" text-anchor="middle">3</text>
+                            <rect x="470" y="375" width="3" height="22" rx="1" fill="#94A3B8"/>
+                            <text class="desk-label-text" x="488" y="390" fill="#00598C" font-size="10" font-weight="800" text-anchor="middle">3</text>
+                            <circle class="desk-status-dot" cx="497" cy="373" r="3" fill="#CBD5E1"/>
                         </g>
 
-                        <!-- Block 3: MK & Dominik (Foto) -->
+                        <!-- Block 3: MK & 2 (Rechts) -->
                         <g class="floor-desk" onclick="handleDeskClick('AP-MK')" id="svg-desk-AP-MK">
-                            <rect class="desk-surface" x="585" y="365" width="40" height="42" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-surface" x="585" y="365" width="40" height="42" rx="5" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
                             <rect class="desk-chair" x="563" y="377" width="14" height="18" rx="3" fill="#64748B"/>
-                            <circle class="desk-status-circle" cx="595" cy="375" r="13" fill="#EF4444"/>
-                            <text x="595" y="379" fill="#FFFFFF" font-size="9.5" font-weight="800" text-anchor="middle">MK</text>
+                            <rect x="619" y="375" width="3" height="22" rx="1" fill="#94A3B8"/>
+                            <text class="desk-label-text" x="602" y="390" fill="#00598C" font-size="9" font-weight="800" text-anchor="middle">MK</text>
+                            <circle class="desk-status-dot" cx="593" cy="373" r="3" fill="#CBD5E1"/>
                         </g>
-                        <g class="floor-desk" onclick="handleDeskClick('AP-DOME')" id="svg-desk-AP-DOME">
-                            <rect class="desk-surface" x="630" y="365" width="40" height="42" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                        <g class="floor-desk" onclick="handleDeskClick('AP-S3-2')" id="svg-desk-AP-S3-2">
+                            <rect class="desk-surface" x="630" y="365" width="40" height="42" rx="5" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
                             <rect class="desk-chair" x="678" y="377" width="14" height="18" rx="3" fill="#64748B"/>
-                            <circle class="desk-status-circle" cx="643" cy="375" r="13" fill="#00598C"/>
-                            <text x="643" y="379" fill="#FFFFFF" font-size="9" font-weight="800" text-anchor="middle">DF</text>
+                            <rect x="635" y="375" width="3" height="22" rx="1" fill="#94A3B8"/>
+                            <text class="desk-label-text" x="653" y="390" fill="#00598C" font-size="10" font-weight="800" text-anchor="middle">2</text>
+                            <circle class="desk-status-dot" cx="662" cy="373" r="3" fill="#CBD5E1"/>
                         </g>
 
                         <!-- KONFERENZTISCH -->
@@ -426,7 +430,6 @@
                             <rect class="desk-surface" x="110" y="505" width="180" height="42" rx="8" fill="#FFFFFF" stroke="#00598C" stroke-width="2"/>
                             <text x="160" y="528" fill="#00598C" font-size="10" font-weight="800">KONFERENZTISCH</text>
                             <text x="175" y="539" fill="#94A3B8" font-size="8" font-weight="600">vorhanden</text>
-                            <!-- 10 Stühle -->
                             <rect class="desk-chair" x="120" y="492" width="14" height="10" rx="2" fill="#64748B"/>
                             <rect class="desk-chair" x="150" y="492" width="14" height="10" rx="2" fill="#64748B"/>
                             <rect class="desk-chair" x="180" y="492" width="14" height="10" rx="2" fill="#64748B"/>
@@ -437,6 +440,7 @@
                             <rect class="desk-chair" x="180" y="550" width="14" height="10" rx="2" fill="#64748B"/>
                             <rect class="desk-chair" x="210" y="550" width="14" height="10" rx="2" fill="#64748B"/>
                             <rect class="desk-chair" x="240" y="550" width="14" height="10" rx="2" fill="#64748B"/>
+                            <circle class="desk-status-dot" cx="280" cy="526" r="3.5" fill="#CBD5E1"/>
                         </g>
                     </svg>
                 </div>
@@ -471,7 +475,7 @@
                         <option value="Drucker">Drucker</option>
                         <option value="Zubehör">Zubehör / Docking</option>
                     </select>
-                    <button onclick="exportCSV()" class="border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 px-3.5 py-2 rounded-xl text-xs font-semibold transition shadow-2xs">
+                    <button onclick="exportCSV()" class="border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 px-3.5 py-2 rounded-xl text-xs font-semibold transition shadow-2xs" title="Als CSV herunterladen">
                         📥 CSV
                     </button>
                 </div>
@@ -725,7 +729,7 @@
         let currentFilterStatus = "ALL";
         let activeSelectedDeskId = null;
 
-        // Exakte Desk-Definition passend zu eurem Plan
+        // Saubere Konfiguration der Tische mit euren echten Nummern
         const DESK_CONFIG = [
             // Büro Nord (Unten)
             { id: "AP-01", label: "Platz 1", name: "Büro Nord (Platz 1)", zone: "Büro Nord (1-2)" },
@@ -738,7 +742,7 @@
 
             // Fensterfront West
             { id: "AP-08", label: "Platz 8", name: "Fensterfront West (Platz 8)", zone: "Fensterfront West" },
-            { id: "AP-07", label: "Platz 7", name: "Fensterfront West (Platz 7 IT)", zone: "Fensterfront West" },
+            { id: "AP-07", label: "Platz 7", name: "Fensterfront West (Platz 7)", zone: "Fensterfront West" },
 
             // 4er-Insel Nord-West
             { id: "AP-JB", label: "JB", name: "Insel Nord-West (Platz JB)", zone: "Open Space Nord" },
@@ -755,12 +759,12 @@
             // Süd-Reihe 2er-Blöcke
             { id: "AP-S1-6", label: "Platz 6", name: "Block Süd 1 (Platz 6)", zone: "Open Space Süd" },
             { id: "AP-S1-5", label: "Platz 5", name: "Block Süd 1 (Platz 5)", zone: "Open Space Süd" },
-            { id: "AP-S2-L", label: "Platz Ort", name: "Block Süd 2 (Platz Ort)", zone: "Open Space Süd" },
+            { id: "AP-S2-4", label: "Platz 4", name: "Block Süd 2 (Platz 4)", zone: "Open Space Süd" },
             { id: "AP-S2-3", label: "Platz 3", name: "Block Süd 2 (Platz 3)", zone: "Open Space Süd" },
             { id: "AP-MK",   label: "MK", name: "Block Süd 3 (Melanie Kalmbach)", zone: "Open Space Süd" },
-            { id: "AP-DOME", label: "DF", name: "Block Süd 3 (Dominik Fabianski)", zone: "Open Space Süd" },
+            { id: "AP-S3-2", label: "Platz 2", name: "Block Süd 3 (Platz 2)", zone: "Open Space Süd" },
 
-            // Konferenz
+            // Konferenzraum
             { id: "KONF", label: "Konferenz", name: "Konferenztisch (12 Plätze)", zone: "Konferenzraum" }
         ];
 
@@ -833,7 +837,6 @@
             });
         }
 
-        // Farbliche Live-Aktualisierung im SVG
         function updateSvgDeskColors() {
             const hardwareList = appData.hardware || [];
 
@@ -850,12 +853,13 @@
                 );
 
                 const surface = deskEl.querySelector(".desk-surface");
-                const circle = deskEl.querySelector(".desk-status-circle");
+                const labelText = deskEl.querySelector(".desk-label-text");
+                const dot = deskEl.querySelector(".desk-status-dot");
                 const isOccupied = matchingHW.length > 0;
 
                 if (surface) {
                     if (isOccupied) {
-                        surface.setAttribute("fill", "#F0F7FF");
+                        surface.setAttribute("fill", "#EFF6FF");
                         surface.setAttribute("stroke", "#00598C");
                         surface.setAttribute("stroke-width", "2");
                     } else {
@@ -865,10 +869,12 @@
                     }
                 }
 
-                if (circle && desk.id !== "AP-07") {
-                    circle.setAttribute("fill", isOccupied ? "#00598C" : "#10B981");
-                    if (isOccupied) circle.classList.add("active-pulse");
-                    else circle.classList.remove("active-pulse");
+                if (labelText) {
+                    labelText.setAttribute("fill", isOccupied ? "#00598C" : "#64748B");
+                }
+
+                if (dot) {
+                    dot.setAttribute("fill", isOccupied ? "#00598C" : "#CBD5E1");
                 }
             });
         }
@@ -891,7 +897,7 @@
             );
 
             let assignedPersons = [...new Set(matchingHW.map(h => h.ZugewiesenAn).filter(Boolean))];
-            let personDisplay = assignedPersons.length > 0 ? assignedPersons.join(", ") : "Aktuell frei / unbesetzt";
+            let personDisplay = assignedPersons.length > 0 ? assignedPersons.join(", ") : "Aktuell unbesetzt / Freier Platz";
 
             document.getElementById("deskModalTitle").innerText = `${desk.label} • ${desk.name}`;
             document.getElementById("deskModalZone").innerText = desk.zone;
@@ -903,7 +909,7 @@
                 badge.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-hg-blue";
                 badge.innerText = "Belegt";
             } else {
-                badge.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700";
+                badge.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500";
                 badge.innerText = "Frei";
             }
 
