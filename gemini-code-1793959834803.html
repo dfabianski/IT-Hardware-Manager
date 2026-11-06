@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hergarten Gruppe | IT-Hardware & Workspace Hub</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace']
+                    },
+                    colors: {
+                        hg: {
+                            blue: '#00598C',
+                            dark: '#003F64',
+                            light: '#A9BDD7',
+                            steel: '#4A7A96',
+                            surface: '#F8FAFC',
+                            card: '#FFFFFF'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .floor-desk {
+            cursor: pointer;
+            transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .floor-desk:hover .desk-surface {
+            filter: drop-shadow(0 6px 12px rgba(0, 89, 140, 0.25));
+            stroke: #00598C;
+            stroke-width: 2px;
+        }
+        .floor-desk:hover .desk-chair {
+            transform: translate(0, -2px);
+        }
+        .floor-desk.selected .desk-surface {
+            stroke: #00598C !important;
+            stroke-width: 2.5px !important;
+            fill: #EFF6FF !important;
+            filter: drop-shadow(0 0 10px rgba(0, 89, 140, 0.35)) !important;
+        }
+        @keyframes subtle-pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.08); }
+        }
+        .active-pulse {
+            animation: subtle-pulse 2.5s infinite ease-in-out;
+            transform-origin: center;
+        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #F1F5F9; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 9999px; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased">
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed top-5 right-5 z-50 hidden flex items-center gap-2.5 bg-slate-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl border border-slate-700/60 font-medium transition-all duration-300 text-xs">
+        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        <span id="toastMsg">Aktion erfolgreich ausgeführt!</span>
+    </div>
+
+    <!-- Header mit Hergarten CI -->
+    <header class="bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-40 shadow-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3.5">
+                <img src="logo.png" alt="Hergarten Gruppe" class="h-10 w-10 object-contain drop-shadow-xs transition-transform hover:scale-105" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=HG&background=00598C&color=fff&rounded=true';">
+                <div class="border-l border-slate-200 pl-3.5">
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-base font-bold text-slate-900 tracking-tight leading-none">IT & Workspace Hub</h1>
+                        <span class="bg-blue-50 text-hg-blue border border-blue-200/60 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Office Neuss</span>
+                    </div>
+                    <p class="text-xs text-hg-blue font-semibold tracking-wide uppercase mt-1">Hergarten Gruppe</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2.5">
+                <button onclick="toggleModal('modalMitarbeiter')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 px-3.5 rounded-xl font-semibold transition flex items-center gap-1.5">
+                    <span>+ Mitarbeiter</span>
+                </button>
+                <button onclick="toggleModal('modalNewHardware')" class="text-xs bg-hg-blue hover:bg-hg-dark text-white py-2 px-4 rounded-xl font-semibold transition shadow-sm hover:shadow flex items-center gap-1.5">
+                    <span>+ Hardware erfassen</span>
+                </button>
+                <button onclick="loadData()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 p-2 rounded-xl transition" title="Daten aktualisieren">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7 flex-1 w-full space-y-7">
+
+        <!-- KPI Status-Karten -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div onclick="setFilterStatus('Office')" class="kpi-card bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs cursor-pointer hover:border-hg-blue transition relative overflow-hidden group" data-status="Office">
+                <div class="flex justify-between items-start">
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">🏢 Office (Vor Ort)</span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-hg-blue"></span>
+                </div>
+                <div class="flex items-baseline gap-2 mt-2">
+                    <p id="kpi-office" class="text-3xl font-extrabold text-slate-900 tracking-tight">0</p>
+                    <span class="text-xs text-slate-400 font-medium">Geräte am Platz</span>
+                </div>
+                <div class="mt-2 text-[11px] text-hg-blue font-semibold flex items-center gap-1">
+                    <span>Sitzplan anzeigen</span>
+                    <span class="group-hover:translate-x-0.5 transition-transform">&rarr;</span>
+                </div>
+            </div>
+
+            <div onclick="setFilterStatus('Aussendienst')" class="kpi-card bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs cursor-pointer hover:border-emerald-500 transition relative overflow-hidden group" data-status="Aussendienst">
+                <div class="flex justify-between items-start">
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">🌐 Außerhalb / Mobil</span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                </div>
+                <div class="flex items-baseline gap-2 mt-2">
+                    <p id="kpi-aussen" class="text-3xl font-extrabold text-emerald-600 tracking-tight">0</p>
+                    <span class="text-xs text-slate-400 font-medium">Homeoffice & LKW</span>
+                </div>
+                <div class="mt-2 text-[11px] text-emerald-600 font-semibold">Mobil im Einsatz</div>
+            </div>
+
+            <div onclick="setFilterStatus('Lager')" class="kpi-card bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs cursor-pointer hover:border-amber-500 transition relative overflow-hidden group" data-status="Lager">
+                <div class="flex justify-between items-start">
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">📦 IT-Lager</span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                </div>
+                <div class="flex items-baseline gap-2 mt-2">
+                    <p id="kpi-lager" class="text-3xl font-extrabold text-amber-600 tracking-tight">0</p>
+                    <span class="text-xs text-slate-400 font-medium">Sofort verfügbar</span>
+                </div>
+                <div class="mt-2 text-[11px] text-amber-600 font-semibold">Reservebestand</div>
+            </div>
+
+            <div onclick="setFilterStatus('Archiv')" class="kpi-card bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs cursor-pointer hover:border-slate-400 transition relative overflow-hidden group" data-status="Archiv">
+                <div class="flex justify-between items-start">
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">🗄️ Archiv / Defekt</span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+                </div>
+                <div class="flex items-baseline gap-2 mt-2">
+                    <p id="kpi-archiv" class="text-3xl font-extrabold text-slate-500 tracking-tight">0</p>
+                    <span class="text-xs text-slate-400 font-medium">Ausgemustert</span>
+                </div>
+                <div class="mt-2 text-[11px] text-slate-400 font-semibold">Historische Geräte</div>
+            </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- ARCHITEKTONISCHER SITZPLAN (EXAKT NACH SCHNITTPLAN)           -->
+        <!-- ============================================================== -->
+        <section id="officeMapSection" class="bg-white rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden transition-all duration-300">
+            <div class="px-6 py-4 border-b border-slate-200/80 bg-slate-50/70 flex flex-wrap justify-between items-center gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-blue-100/70 text-hg-blue flex items-center justify-center font-bold text-sm">
+                        🗺️
+                    </div>
+                    <div>
+                        <h2 class="text-sm font-bold text-slate-900 tracking-tight">Interaktiver Büro-Sitzplan (Zentrale Neuss-Holzheim)</h2>
+                        <p class="text-xs text-slate-500">Klicke auf einen Sitzplatz, um zugewiesene Mitarbeiter & Hardware anzuzeigen</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-5 text-xs font-medium">
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-3 h-3 rounded-full bg-[#00598C] shadow-xs"></span>
+                        <span class="text-slate-700">Belegt mit Hardware</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-3 h-3 rounded-full bg-emerald-500 shadow-xs"></span>
+                        <span class="text-slate-700">Bereit / Frei</span>
+                    </div>
+                    <button onclick="toggleMapCollapse()" id="btnCollapseMap" class="text-xs bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 px-3 py-1.5 rounded-xl font-medium transition shadow-2xs">
+                        Plan minimieren
+                    </button>
+                </div>
+            </div>
+
+            <!-- Interaktiver Grundriss -->
+            <div id="mapViewport" class="p-4 sm:p-6 bg-[#F1F5F9]/60 overflow-x-auto flex justify-center">
+                <div class="relative w-full max-w-5xl rounded-2xl bg-[#FAFAFA] border border-slate-200 shadow-inner p-3 sm:p-4 select-none">
+                    
+                    <svg viewBox="0 0 1000 620" class="w-full h-auto drop-shadow-xs" style="min-width: 820px;">
+                        <defs>
+                            <pattern id="floorTiles" width="20" height="20" patternUnits="userSpaceOnUse">
+                                <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#E2E8F0" stroke-width="0.5"/>
+                            </pattern>
+                            <pattern id="woodPlanks" width="40" height="12" patternUnits="userSpaceOnUse">
+                                <rect width="40" height="12" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="0.5"/>
+                            </pattern>
+                        </defs>
+
+                        <!-- Bodenfläche -->
+                        <rect x="20" y="20" width="960" height="580" rx="16" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2"/>
+                        <rect x="20" y="20" width="960" height="580" rx="16" fill="url(#floorTiles)" opacity="0.65"/>
+
+                        <!-- ================= RÄUME & WÄNDE ================= -->
+                        
+                        <!-- 1. BÜRO NORD (Verglaste Büros links oben, violette Zone) -->
+                        <!-- Oberes Büro: Plätze 3, 4, 5 -->
+                        <rect x="25" y="25" width="180" height="135" fill="#FFFFFF" stroke="#818CF8" stroke-width="2.5" rx="8"/>
+                        <text x="36" y="44" fill="#6366F1" font-size="10" font-weight="800">BÜRO NORD (3-5)</text>
+
+                        <!-- Unteres Büro: Plätze 1 & 2 -->
+                        <rect x="25" y="160" width="180" height="125" fill="#FFFFFF" stroke="#818CF8" stroke-width="2.5" rx="8"/>
+                        <text x="36" y="178" fill="#6366F1" font-size="10" font-weight="800">BÜRO NORD (1-2)</text>
+
+                        <!-- 2. KONFERENZRAUM UNTEN LINKS -->
+                        <rect x="25" y="445" width="335" height="150" fill="#FFFFFF" stroke="#10B981" stroke-width="2.5" rx="8"/>
+                        <text x="40" y="468" fill="#00598C" font-size="12" font-weight="800">KONFERENZRAUM</text>
+                        <text x="40" y="484" fill="#94A3B8" font-size="9" font-weight="600">Boardroom & Medientechnik</text>
+
+                        <!-- 3. ARCHIV / IT & FITNESS -->
+                        <rect x="360" y="445" width="265" height="150" fill="#FFFFFF" stroke="#94A3B8" stroke-width="2" rx="6"/>
+                        <text x="375" y="468" fill="#64748B" font-size="11" font-weight="700">ARCHIV & IT-SERVER</text>
+                        <rect x="375" y="490" width="30" height="55" rx="4" fill="#E2E8F0" stroke="#94A3B8"/>
+
+                        <rect x="625" y="445" width="170" height="150" fill="#FFFFFF" stroke="#94A3B8" stroke-width="2" rx="6"/>
+                        <text x="640" y="468" fill="#64748B" font-size="11" font-weight="700">FITNESS & SPORT</text>
+
+                        <!-- 4. OSTFLÜGEL (KÜCHE & KASINO) -->
+                        <rect x="800" y="25" width="175" height="570" fill="#FFFFFF" stroke="#94A3B8" stroke-width="2.5" rx="8"/>
+                        <rect x="800" y="380" width="175" height="215" fill="url(#woodPlanks)"/>
+                        <text x="825" y="415" fill="#64748B" font-size="12" font-weight="800">KÜCHE / CASINO</text>
+
+                        <!-- Lounge, Phonebox & Theke -->
+                        <path d="M 640 45 C 640 45, 680 40, 715 65 C 740 85, 750 120, 745 140" fill="none" stroke="#A9BDD7" stroke-width="20" stroke-linecap="round"/>
+                        <circle cx="685" cy="100" r="14" fill="#CBD5E1"/>
+                        <text x="650" y="165" fill="#94A3B8" font-size="10" font-weight="600">Lounge</text>
+
+                        <circle cx="580" cy="270" r="36" fill="#F1F5F9" stroke="#A9BDD7" stroke-width="3"/>
+                        <circle cx="580" cy="270" r="14" fill="#FFFFFF" stroke="#94A3B8"/>
+                        <text x="566" y="274" fill="#00598C" font-size="9" font-weight="800">BOX</text>
+
+                        <!-- ================= SITZPLÄTZE (EXAKTE NUMMERIERUNG) ================= -->
+
+                        <!-- BÜRO NORD (OBEN): PLATZ 5, 4, 3 -->
+                        <!-- Platz 5 (Wandplatz oben links) -->
+                        <g class="floor-desk" onclick="handleDeskClick('AP-05')" id="svg-desk-AP-05">
+                            <rect class="desk-surface" x="40" y="55" width="46" height="30" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-chair" x="53" y="90" width="16" height="12" rx="3" fill="#64748B"/>
+                            <circle class="desk-status-circle" cx="53" cy="55" r="13" fill="#EF4444"/>
+                            <text x="53" y="59" fill="#FFFFFF" font-size="11" font-weight="800" text-anchor="middle">5</text>
+                        </g>
+
+                        <!-- Platz 4 (Doppeltisch oben) -->
+                        <g class="floor-desk" onclick="handleDeskClick('AP-04')" id="svg-desk-AP-04">
+                            <rect class="desk-surface" x="115" y="55" width="46" height="34" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-chair" x="130" y="35" width="16" height="12" rx="3" fill="#64748B"/>
+                            <circle class="desk-status-circle" cx="138" cy="72" r="13" fill="#EF4444"/>
+                            <text x="138" y="76" fill="#FFFFFF" font-size="11" font-weight="800" text-anchor="middle">4</text>
+                        </g>
+
+                        <!-- Platz 3 (Doppeltisch unten) -->
+                        <g class="floor-desk" onclick="handleDeskClick('AP-03')" id="svg-desk-AP-03">
+                            <rect class="desk-surface" x="115" y="95" width="46" height="34" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-chair" x="130" y="135" width="16" height="12" rx="3" fill="#64748B"/>
+                            <circle class="desk-status-circle" cx="138" cy="112" r="13" fill="#EF4444"/>
+                            <text x="138" y="116" fill="#FFFFFF" font-size="11" font-weight="800" text-anchor="middle">3</text>
+                        </g>
+
+                        <!-- BÜRO NORD (UNTEN): PLATZ 2 & 1 -->
+                        <!-- Platz 2 (Oben) -->
+                        <g class="floor-desk" onclick="handleDeskClick('AP-02')" id="svg-desk-AP-02">
+                            <rect class="desk-surface" x="55" y="190" width="48" height="35" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-chair" x="108" y="198" width="12" height="16" rx="3" fill="#64748B"/>
+                            <circle class="desk-status-circle" cx="72" cy="190" r="13" fill="#EF4444"/>
+                            <text x="72" y="194" fill="#FFFFFF" font-size="11" font-weight="800" text-anchor="middle">2</text>
+                        </g>
+
+                        <!-- Platz 1 (Unten) -->
+                        <g class="floor-desk" onclick="handleDeskClick('AP-01')" id="svg-desk-AP-01">
+                            <rect class="desk-surface" x="55" y="232" width="48" height="35" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-chair" x="108" y="240" width="12" height="16" rx="3" fill="#64748B"/>
+                            <circle class="desk-status-circle" cx="72" cy="245" r="13" fill="#EF4444"/>
+                            <text x="72" y="249" fill="#FFFFFF" font-size="11" font-weight="800" text-anchor="middle">1</text>
+                        </g>
+
+                        <!-- FENSTERFRONT WEST (UNTEN LINKS): PLATZ 8 & 7 -->
+                        <!-- Platz 8 (Oben) -->
+                        <g class="floor-desk" onclick="handleDeskClick('AP-08')" id="svg-desk-AP-08">
+                            <rect class="desk-surface" x="45" y="325" width="48" height="35" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-chair" x="98" y="333" width="12" height="16" rx="3" fill="#64748B"/>
+                            <circle class="desk-status-circle" cx="62" cy="325" r="13" fill="#10B981"/>
+                            <text x="62" y="329" fill="#FFFFFF" font-size="11" font-weight="800" text-anchor="middle">8</text>
+                        </g>
+
+                        <!-- Platz 7 (Unten mit Flagge) -->
+                        <g class="floor-desk" onclick="handleDeskClick('AP-07')" id="svg-desk-AP-07">
+                            <rect class="desk-surface" x="45" y="367" width="48" height="35" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-chair" x="98" y="375" width="12" height="16" rx="3" fill="#64748B"/>
+                            <!-- Kreis mit Flaggen-Design -->
+                            <circle class="desk-status-circle" cx="62" cy="380" r="13" fill="#10B981"/>
+                            <clipPath id="flagClip"><circle cx="62" cy="380" r="13"/></clipPath>
+                            <g clip-path="url(#flagClip)">
+                                <rect x="49" y="367" width="8.6" height="26" fill="#009246"/>
+                                <rect x="57.6" y="367" width="8.6" height="26" fill="#FFFFFF"/>
+                                <rect x="66.2" y="367" width="8.8" height="26" fill="#CE2B37"/>
+                            </g>
+                            <circle cx="62" cy="380" r="13" fill="none" stroke="#FFFFFF" stroke-width="1.5"/>
+                        </g>
+
+                        <!-- 4ER-INSEL NORD-WEST (OPEN SPACE): JB, 11, 9, 12 -->
+                        <line x1="255" y1="110" x2="335" y2="110" stroke="#A9BDD7" stroke-width="3" stroke-linecap="round"/>
+                        <!-- JB (Oben Links) -->
+                        <g class="floor-desk" onclick="handleDeskClick('AP-JB')" id="svg-desk-AP-JB">
+                            <rect class="desk-surface" x="250" y="65" width="44" height="40" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-chair" x="264" y="44" width="16" height="12" rx="3" fill="#64748B"/>
+                            <circle class="desk-status-circle" cx="250" cy="65" r="13" fill="#EF4444"/>
+                            <text x="250" y="69" fill="#FFFFFF" font-size="10" font-weight="800" text-anchor="middle">JB</text>
+                        </g>
+
+                        <!-- 11 (Oben Rechts) -->
+                        <g class="floor-desk" onclick="handleDeskClick('AP-11')" id="svg-desk-AP-11">
+                            <rect class="desk-surface" x="298" y="65" width="44" height="40" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-chair" x="312" y="44" width="16" height="12" rx="3" fill="#64748B"/>
+                            <circle class="desk-status-circle" cx="316" cy="65" r="13" fill="#10B981"/>
+                            <text x="316" y="69" fill="#FFFFFF" font-size="11" font-weight="800" text-anchor="middle">11</text>
+                        </g>
+
+                        <!-- 9 (Unten Links) -->
+                        <g class="floor-desk" onclick="handleDeskClick('AP-09')" id="svg-desk-AP-09">
+                            <rect class="desk-surface" x="250" y="115" width="44" height="40" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-chair" x="264" y="160" width="16" height="12" rx="3" fill="#64748B"/>
+                            <circle class="desk-status-circle" cx="250" cy="130" r="13" fill="#10B981"/>
+                            <text x="250" y="134" fill="#FFFFFF" font-size="11" font-weight="800" text-anchor="middle">9</text>
+                        </g>
+
+                        <!-- 12 (Unten Rechts) -->
+                        <g class="floor-desk" onclick="handleDeskClick('AP-12')" id="svg-desk-AP-12">
+                            <rect class="desk-surface" x="298" y="115" width="44" height="40" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-chair" x="312" y="160" width="16" height="12" rx="3" fill="#64748B"/>
+                            <circle class="desk-status-circle" cx="316" cy="130" r="13" fill="#10B981"/>
+                            <text x="316" y="134" fill="#FFFFFF" font-size="11" font-weight="800" text-anchor="middle">12</text>
+                        </g>
+
+                        <!-- 4ER-INSEL NORD-OST (OPEN SPACE): 13, 15, 14, 16 -->
+                        <line x1="445" y1="110" x2="525" y2="110" stroke="#A9BDD7" stroke-width="3" stroke-linecap="round"/>
+                        <!-- 13 (Oben Links) -->
+                        <g class="floor-desk" onclick="handleDeskClick('AP-13')" id="svg-desk-AP-13">
+                            <rect class="desk-surface" x="440" y="65" width="44" height="40" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-chair" x="454" y="44" width="16" height="12" rx="3" fill="#64748B"/>
+                            <circle class="desk-status-circle" cx="440" cy="65" r="13" fill="#10B981"/>
+                            <text x="440" y="69" fill="#FFFFFF" font-size="11" font-weight="800" text-anchor="middle">13</text>
+                        </g>
+
+                        <!-- 15 (Oben Rechts) -->
+                        <g class="floor-desk" onclick="handleDeskClick('AP-15')" id="svg-desk-AP-15">
+                            <rect class="desk-surface" x="488" y="65" width="44" height="40" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-chair" x="502" y="44" width="16" height="12" rx="3" fill="#64748B"/>
+                            <circle class="desk-status-circle" cx="506" cy="65" r="13" fill="#10B981"/>
+                            <text x="506" y="69" fill="#FFFFFF" font-size="11" font-weight="800" text-anchor="middle">15</text>
+                        </g>
+
+                        <!-- 14 (Unten Links) -->
+                        <g class="floor-desk" onclick="handleDeskClick('AP-14')" id="svg-desk-AP-14">
+                            <rect class="desk-surface" x="440" y="115" width="44" height="40" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-chair" x="454" y="160" width="16" height="12" rx="3" fill="#64748B"/>
+                            <circle class="desk-status-circle" cx="440" cy="130" r="13" fill="#10B981"/>
+                            <text x="440" y="134" fill="#FFFFFF" font-size="11" font-weight="800" text-anchor="middle">14</text>
+                        </g>
+
+                        <!-- 16 (Unten Rechts) -->
+                        <g class="floor-desk" onclick="handleDeskClick('AP-16')" id="svg-desk-AP-16">
+                            <rect class="desk-surface" x="488" y="115" width="44" height="40" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-chair" x="502" y="160" width="16" height="12" rx="3" fill="#64748B"/>
+                            <circle class="desk-status-circle" cx="506" cy="130" r="13" fill="#10B981"/>
+                            <text x="506" y="134" fill="#FFFFFF" font-size="11" font-weight="800" text-anchor="middle">16</text>
+                        </g>
+
+                        <!-- SÜD-REIHE: 3x 2ER-BLÖCKE -->
+                        <!-- Block 1: 6 & 5 -->
+                        <g class="floor-desk" onclick="handleDeskClick('AP-S1-6')" id="svg-desk-AP-S1-6">
+                            <rect class="desk-surface" x="250" y="365" width="40" height="42" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-chair" x="228" y="377" width="14" height="18" rx="3" fill="#64748B"/>
+                            <circle class="desk-status-circle" cx="260" cy="375" r="13" fill="#10B981"/>
+                            <text x="260" y="379" fill="#FFFFFF" font-size="11" font-weight="800" text-anchor="middle">6</text>
+                        </g>
+                        <g class="floor-desk" onclick="handleDeskClick('AP-S1-5')" id="svg-desk-AP-S1-5">
+                            <rect class="desk-surface" x="295" y="365" width="40" height="42" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-chair" x="343" y="377" width="14" height="18" rx="3" fill="#64748B"/>
+                            <circle class="desk-status-circle" cx="308" cy="375" r="13" fill="#10B981"/>
+                            <text x="308" y="379" fill="#FFFFFF" font-size="11" font-weight="800" text-anchor="middle">5</text>
+                        </g>
+
+                        <!-- Block 2: Foto (Links) & 3 (Rechts) -->
+                        <g class="floor-desk" onclick="handleDeskClick('AP-S2-L')" id="svg-desk-AP-S2-L">
+                            <rect class="desk-surface" x="420" y="365" width="40" height="42" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-chair" x="398" y="377" width="14" height="18" rx="3" fill="#64748B"/>
+                            <circle class="desk-status-circle" cx="430" cy="375" r="13" fill="#00598C"/>
+                            <text x="430" y="378" fill="#FFFFFF" font-size="9" font-weight="800" text-anchor="middle">Ort</text>
+                        </g>
+                        <g class="floor-desk" onclick="handleDeskClick('AP-S2-3')" id="svg-desk-AP-S2-3">
+                            <rect class="desk-surface" x="465" y="365" width="40" height="42" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-chair" x="513" y="377" width="14" height="18" rx="3" fill="#64748B"/>
+                            <circle class="desk-status-circle" cx="478" cy="375" r="13" fill="#10B981"/>
+                            <text x="478" y="379" fill="#FFFFFF" font-size="11" font-weight="800" text-anchor="middle">3</text>
+                        </g>
+
+                        <!-- Block 3: MK & Dominik (Foto) -->
+                        <g class="floor-desk" onclick="handleDeskClick('AP-MK')" id="svg-desk-AP-MK">
+                            <rect class="desk-surface" x="585" y="365" width="40" height="42" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-chair" x="563" y="377" width="14" height="18" rx="3" fill="#64748B"/>
+                            <circle class="desk-status-circle" cx="595" cy="375" r="13" fill="#EF4444"/>
+                            <text x="595" y="379" fill="#FFFFFF" font-size="9.5" font-weight="800" text-anchor="middle">MK</text>
+                        </g>
+                        <g class="floor-desk" onclick="handleDeskClick('AP-DOME')" id="svg-desk-AP-DOME">
+                            <rect class="desk-surface" x="630" y="365" width="40" height="42" rx="4" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+                            <rect class="desk-chair" x="678" y="377" width="14" height="18" rx="3" fill="#64748B"/>
+                            <circle class="desk-status-circle" cx="643" cy="375" r="13" fill="#00598C"/>
+                            <text x="643" y="379" fill="#FFFFFF" font-size="9" font-weight="800" text-anchor="middle">DF</text>
+                        </g>
+
+                        <!-- KONFERENZTISCH -->
+                        <g class="floor-desk" onclick="handleDeskClick('KONF')" id="svg-desk-KONF">
+                            <rect class="desk-surface" x="110" y="505" width="180" height="42" rx="8" fill="#FFFFFF" stroke="#00598C" stroke-width="2"/>
+                            <text x="160" y="528" fill="#00598C" font-size="10" font-weight="800">KONFERENZTISCH</text>
+                            <text x="175" y="539" fill="#94A3B8" font-size="8" font-weight="600">vorhanden</text>
+                            <!-- 10 Stühle -->
+                            <rect class="desk-chair" x="120" y="492" width="14" height="10" rx="2" fill="#64748B"/>
+                            <rect class="desk-chair" x="150" y="492" width="14" height="10" rx="2" fill="#64748B"/>
+                            <rect class="desk-chair" x="180" y="492" width="14" height="10" rx="2" fill="#64748B"/>
+                            <rect class="desk-chair" x="210" y="492" width="14" height="10" rx="2" fill="#64748B"/>
+                            <rect class="desk-chair" x="240" y="492" width="14" height="10" rx="2" fill="#64748B"/>
+                            <rect class="desk-chair" x="120" y="550" width="14" height="10" rx="2" fill="#64748B"/>
+                            <rect class="desk-chair" x="150" y="550" width="14" height="10" rx="2" fill="#64748B"/>
+                            <rect class="desk-chair" x="180" y="550" width="14" height="10" rx="2" fill="#64748B"/>
+                            <rect class="desk-chair" x="210" y="550" width="14" height="10" rx="2" fill="#64748B"/>
+                            <rect class="desk-chair" x="240" y="550" width="14" height="10" rx="2" fill="#64748B"/>
+                        </g>
+                    </svg>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================== -->
+        <!-- HARDWARE TABELLE                                               -->
+        <!-- ============================================================== -->
+        <section class="bg-white rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200/80 flex flex-wrap gap-4 justify-between items-center bg-slate-50/50">
+                <div class="flex items-center gap-1 bg-slate-200/70 p-1 rounded-2xl text-xs font-semibold">
+                    <button onclick="setFilterStatus('ALL')" id="tab-ALL" class="tab-btn px-3.5 py-1.5 rounded-xl bg-white text-slate-900 shadow-xs">Alle Geräte</button>
+                    <button onclick="setFilterStatus('Office')" id="tab-Office" class="tab-btn px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 transition">🏢 Office</button>
+                    <button onclick="setFilterStatus('Aussendienst')" id="tab-Aussendienst" class="tab-btn px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 transition">🌐 Außerhalb</button>
+                    <button onclick="setFilterStatus('Lager')" id="tab-Lager" class="tab-btn px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 transition">📦 Lager</button>
+                    <button onclick="setFilterStatus('Archiv')" id="tab-Archiv" class="tab-btn px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 transition">🗄️ Archiv</button>
+                </div>
+
+                <div class="flex items-center gap-2.5 flex-1 max-w-lg justify-end">
+                    <div class="relative w-full max-w-xs">
+                        <input type="text" id="searchInput" oninput="renderTable()" placeholder="🔍 Platz (z.B. Platz 4, MK), S/N, Name..." class="w-full bg-white border border-slate-200 rounded-xl pl-3 pr-8 py-2 text-xs focus:ring-2 focus:ring-hg-blue focus:outline-none transition">
+                        <span id="clearSearch" onclick="clearSearch()" class="hidden absolute right-2.5 top-2 text-slate-400 cursor-pointer text-xs">✕</span>
+                    </div>
+                    <select id="kategorieFilter" onchange="renderTable()" class="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-700 focus:outline-none">
+                        <option value="">Alle Kategorien</option>
+                        <option value="Notebook">Notebook</option>
+                        <option value="PC / Desktop">PC / Desktop</option>
+                        <option value="Monitor">Monitor</option>
+                        <option value="Smartphone">Smartphone</option>
+                        <option value="Tablet / Scanner">Tablet / Scanner</option>
+                        <option value="Drucker">Drucker</option>
+                        <option value="Zubehör">Zubehör / Docking</option>
+                    </select>
+                    <button onclick="exportCSV()" class="border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 px-3.5 py-2 rounded-xl text-xs font-semibold transition shadow-2xs">
+                        📥 CSV
+                    </button>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto min-h-[320px]">
+                <table class="w-full text-left text-xs text-slate-600">
+                    <thead class="bg-slate-100/70 text-slate-700 font-bold uppercase tracking-wider border-b border-slate-200/80">
+                        <tr>
+                            <th class="px-6 py-4">Asset-Tag</th>
+                            <th class="px-6 py-4">Gerät & Modell</th>
+                            <th class="px-6 py-4">Kategorie</th>
+                            <th class="px-6 py-4">Seriennummer (S/N)</th>
+                            <th class="px-6 py-4">Status</th>
+                            <th class="px-6 py-4">Sitzplatz / Besitzer</th>
+                            <th class="px-6 py-4">Datum</th>
+                            <th class="px-6 py-4 text-right">Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tblHardware" class="divide-y divide-slate-100 font-normal">
+                        <tr><td colspan="8" class="px-6 py-10 text-center text-slate-400">Hardware-Daten werden geladen...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="px-6 py-3.5 border-t border-slate-100 bg-slate-50/50 flex justify-between items-center text-xs text-slate-500 font-medium">
+                <span id="tableCount">0 Geräte gelistet</span>
+                <span class="text-hg-blue font-semibold">IT Helpdesk Hergarten Gruppe</span>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal: Arbeitsplatz-Inspektor -->
+    <div id="modalDeskInfo" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 space-y-4 border border-slate-100">
+            <div class="border-b border-slate-100 pb-3.5 flex justify-between items-start">
+                <div class="flex items-center gap-3">
+                    <div class="w-11 h-11 rounded-2xl bg-blue-50 text-hg-blue font-bold text-sm flex items-center justify-center border border-blue-100 shadow-xs" id="deskModalIcon">
+                        AP
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h3 id="deskModalTitle" class="text-base font-bold text-slate-900 tracking-tight">Platz 01</h3>
+                            <span id="deskModalStatusBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">Frei</span>
+                        </div>
+                        <p id="deskModalZone" class="text-xs text-slate-500">Zone Großraumbüro</p>
+                    </div>
+                </div>
+                <button onclick="toggleModal('modalDeskInfo')" class="text-slate-400 hover:text-slate-600 text-lg p-1">✕</button>
+            </div>
+
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/70 flex justify-between items-center">
+                <div>
+                    <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Aktueller Nutzer</span>
+                    <strong id="deskModalUser" class="text-sm font-bold text-slate-900">Niemand fest zugewiesen</strong>
+                </div>
+                <button onclick="filterTableByDesk()" class="text-xs bg-white border border-slate-200 hover:bg-slate-100 text-hg-blue font-semibold px-3 py-1.5 rounded-xl shadow-2xs transition">
+                    In Tabelle filtern 🔍
+                </button>
+            </div>
+
+            <div>
+                <div class="flex justify-between items-center mb-2">
+                    <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Vor Ort verbuchte Hardware</h4>
+                    <span id="deskModalHwCount" class="text-xs text-slate-400 font-semibold">0 Geräte</span>
+                </div>
+                <div class="border border-slate-200 rounded-2xl overflow-hidden max-h-56 overflow-y-auto">
+                    <table class="w-full text-left text-xs text-slate-600">
+                        <thead class="bg-slate-100/80 text-slate-700 font-semibold">
+                            <tr>
+                                <th class="p-2.5">Asset-Tag</th>
+                                <th class="p-2.5">Modell / Gerät</th>
+                                <th class="p-2.5">Kategorie</th>
+                                <th class="p-2.5">S/N</th>
+                            </tr>
+                        </thead>
+                        <tbody id="deskModalHardwareList" class="divide-y divide-slate-100 font-normal">
+                            <tr><td colspan="4" class="p-3 text-center text-slate-400">Keine Hardware an diesem Platz vorhanden</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center pt-3 border-t border-slate-100">
+                <button type="button" onclick="assignHardwareToThisDesk()" class="text-xs text-hg-blue hover:text-hg-dark font-bold flex items-center gap-1">
+                    + Hardware für diesen Tisch buchen
+                </button>
+                <button type="button" onclick="toggleModal('modalDeskInfo')" class="px-4 py-2 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition">
+                    Schließen
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Neues Hardware Asset erfassen -->
+    <div id="modalNewHardware" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 space-y-4 border border-slate-100">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="text-base font-bold text-slate-900">Neues IT-Asset erfassen</h3>
+                <button onclick="toggleModal('modalNewHardware')" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+            </div>
+            
+            <form onsubmit="submitNewAsset(event)" class="space-y-3.5">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Asset-Tag / Inventar-Nr</label>
+                        <input type="text" id="newAssetTag" placeholder="z.B. IT-0482" required class="w-full border rounded-xl p-2.5 text-xs font-mono focus:ring-2 focus:ring-hg-blue outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Kategorie</label>
+                        <select id="newKategorie" required class="w-full border rounded-xl p-2.5 text-xs bg-white focus:ring-2 focus:ring-hg-blue outline-none">
+                            <option value="Notebook">Notebook</option>
+                            <option value="PC / Desktop">PC / Desktop</option>
+                            <option value="Monitor">Monitor</option>
+                            <option value="Smartphone">Smartphone</option>
+                            <option value="Tablet / Scanner">Tablet / Scanner</option>
+                            <option value="Drucker">Drucker</option>
+                            <option value="Zubehör">Zubehör / Docking</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Hersteller & Modell</label>
+                    <input type="text" id="newModell" placeholder="z.B. Lenovo ThinkPad T14, Dell 27 Zoll" required class="w-full border rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-hg-blue outline-none">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Seriennummer (S/N)</label>
+                        <input type="text" id="newSerial" placeholder="z.B. PF44A9X2" required class="w-full border rounded-xl p-2.5 text-xs font-mono focus:ring-2 focus:ring-hg-blue outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Start-Status</label>
+                        <select id="newStatus" class="w-full border rounded-xl p-2.5 text-xs bg-white focus:ring-2 focus:ring-hg-blue outline-none">
+                            <option value="Office">🏢 Office (Vor Ort an Tisch)</option>
+                            <option value="Aussendienst">🌐 Außerhalb (Homeoffice / Mobil)</option>
+                            <option value="Lager">📦 Im Lager (Frei)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Sitzplatz / Raum</label>
+                        <input type="text" id="newStandort" list="deskSuggestions" placeholder="z.B. Platz 4, MK" value="Platz 1" class="w-full border rounded-xl p-2.5 text-xs font-mono font-bold text-hg-blue focus:ring-2 focus:ring-hg-blue outline-none">
+                        <datalist id="deskSuggestions"></datalist>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Mitarbeiter / Nutzer</label>
+                        <input type="text" id="newOwner" list="mitarbeiterList" placeholder="Name auswählen..." class="w-full border rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-hg-blue outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Bemerkung / Specs</label>
+                    <input type="text" id="newBemerkung" placeholder="z.B. 32GB RAM, 1TB SSD, 2x DisplayPort" class="w-full border rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-hg-blue outline-none">
+                </div>
+
+                <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                    <button type="button" onclick="toggleModal('modalNewHardware')" class="px-4 py-2 text-xs text-slate-600 hover:bg-slate-100 rounded-xl font-medium">Abbrechen</button>
+                    <button type="submit" id="btnSaveAsset" class="px-5 py-2 text-xs bg-hg-blue text-white font-bold rounded-xl hover:bg-hg-dark transition shadow-sm">Asset anlegen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Zuweisen / Verschieben -->
+    <div id="modalAction" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-100">
+            <div class="border-b border-slate-100 pb-3 flex justify-between items-start">
+                <div>
+                    <h3 id="actionModalTitle" class="text-base font-bold text-slate-900">Hardware bewegen</h3>
+                    <p id="actionModalSub" class="text-xs text-slate-500 font-mono mt-0.5">-</p>
+                </div>
+                <button onclick="toggleModal('modalAction')" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+            </div>
+
+            <form onsubmit="submitAssetAction(event)" class="space-y-3.5">
+                <input type="hidden" id="actionAssetId">
+                <input type="hidden" id="actionAssetTag">
+                <input type="hidden" id="actionModell">
+
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Neuer Status</label>
+                    <select id="actionStatus" onchange="toggleActionFields()" required class="w-full border rounded-xl p-2.5 text-xs bg-white focus:ring-2 focus:ring-hg-blue outline-none">
+                        <option value="Office">🏢 Aktive Hardware im Office (Arbeitsplatz)</option>
+                        <option value="Aussendienst">🌐 Aktive Hardware Außerhalb (Homeoffice / Mobil / LKW)</option>
+                        <option value="Lager">📦 Zurück ins IT-Lager buchen</option>
+                        <option value="Archiv">🗄️ Archivieren (Defekt / Ausgemustert / Leasing-Ende)</option>
+                    </select>
+                </div>
+
+                <div id="boxAssignee">
+                    <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Mitarbeiter / Nutzer</label>
+                    <input type="text" id="actionOwner" list="mitarbeiterList" placeholder="Name auswählen..." class="w-full border rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-hg-blue outline-none">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3" id="boxLocation">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Sitzplatz / Raum</label>
+                        <input type="text" id="actionLocation" list="deskSuggestions" placeholder="z.B. Platz 4, MK" class="w-full border rounded-xl p-2.5 text-xs font-mono font-bold text-hg-blue focus:ring-2 focus:ring-hg-blue outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Abteilung</label>
+                        <input type="text" id="actionDept" placeholder="z.B. Spedition, IT" class="w-full border rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-hg-blue outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Grund / Bemerkung</label>
+                    <input type="text" id="actionNote" placeholder="z.B. Arbeitsplatzwechsel, Monitor getauscht" class="w-full border rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-hg-blue outline-none">
+                </div>
+
+                <div class="flex justify-between items-center pt-3 border-t border-slate-100">
+                    <button type="button" onclick="printSingleReceipt()" class="text-xs text-hg-blue hover:underline flex items-center gap-1 font-bold">
+                        📄 Beleg (PDF)
+                    </button>
+                    <div class="flex gap-2">
+                        <button type="button" onclick="toggleModal('modalAction')" class="px-4 py-2 text-xs text-slate-600 hover:bg-slate-100 rounded-xl font-medium">Abbrechen</button>
+                        <button type="submit" id="btnSubmitAction" class="px-4 py-2 text-xs bg-hg-blue text-white font-bold rounded-xl hover:bg-hg-dark transition shadow-sm">Speichern</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Neuer Mitarbeiter -->
+    <div id="modalMitarbeiter" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full p-6 space-y-4 border border-slate-100">
+            <h3 class="text-base font-bold text-slate-900">Mitarbeiter erfassen</h3>
+            <form onsubmit="submitNewMitarbeiter(event)" class="space-y-3">
+                <input type="text" id="maName" placeholder="Vollständiger Name" required class="w-full border rounded-xl p-2.5 text-xs">
+                <input type="text" id="maAbt" placeholder="Abteilung (z.B. Disposition, IT)" required class="w-full border rounded-xl p-2.5 text-xs">
+                <input type="text" id="maLoc" list="deskSuggestions" placeholder="Stammplatz (z.B. Platz 4)" value="Platz 1" required class="w-full border rounded-xl p-2.5 text-xs font-mono font-bold text-hg-blue">
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="toggleModal('modalMitarbeiter')" class="px-4 py-2 text-xs text-slate-600 hover:bg-slate-100 rounded-xl font-medium">Abbrechen</button>
+                    <button type="submit" class="px-4 py-2 text-xs bg-hg-blue text-white font-bold rounded-xl hover:bg-hg-dark">Speichern</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <datalist id="mitarbeiterList"></datalist>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbwTMg_29PbkdZKGu_goMcqaHsFdqf_HuhD7aYuwIJ_DFKu4ZlILrSd2DHMykLMBwkZd/exec";
+
+        let appData = { hardware: [], mitarbeiter: [], historie: [] };
+        let currentFilterStatus = "ALL";
+        let activeSelectedDeskId = null;
+
+        // Exakte Desk-Definition passend zu eurem Plan
+        const DESK_CONFIG = [
+            // Büro Nord (Unten)
+            { id: "AP-01", label: "Platz 1", name: "Büro Nord (Platz 1)", zone: "Büro Nord (1-2)" },
+            { id: "AP-02", label: "Platz 2", name: "Büro Nord (Platz 2)", zone: "Büro Nord (1-2)" },
+            
+            // Büro Nord (Oben)
+            { id: "AP-03", label: "Platz 3", name: "Büro Nord (Platz 3)", zone: "Büro Nord (3-5)" },
+            { id: "AP-04", label: "Platz 4", name: "Büro Nord (Platz 4)", zone: "Büro Nord (3-5)" },
+            { id: "AP-05", label: "Platz 5", name: "Büro Nord (Platz 5 Wand)", zone: "Büro Nord (3-5)" },
+
+            // Fensterfront West
+            { id: "AP-08", label: "Platz 8", name: "Fensterfront West (Platz 8)", zone: "Fensterfront West" },
+            { id: "AP-07", label: "Platz 7", name: "Fensterfront West (Platz 7 IT)", zone: "Fensterfront West" },
+
+            // 4er-Insel Nord-West
+            { id: "AP-JB", label: "JB", name: "Insel Nord-West (Platz JB)", zone: "Open Space Nord" },
+            { id: "AP-11", label: "Platz 11", name: "Insel Nord-West (Platz 11)", zone: "Open Space Nord" },
+            { id: "AP-09", label: "Platz 9", name: "Insel Nord-West (Platz 9)", zone: "Open Space Nord" },
+            { id: "AP-12", label: "Platz 12", name: "Insel Nord-West (Platz 12)", zone: "Open Space Nord" },
+
+            // 4er-Insel Nord-Ost
+            { id: "AP-13", label: "Platz 13", name: "Insel Nord-Ost (Platz 13)", zone: "Open Space Nord" },
+            { id: "AP-15", label: "Platz 15", name: "Insel Nord-Ost (Platz 15)", zone: "Open Space Nord" },
+            { id: "AP-14", label: "Platz 14", name: "Insel Nord-Ost (Platz 14)", zone: "Open Space Nord" },
+            { id: "AP-16", label: "Platz 16", name: "Insel Nord-Ost (Platz 16)", zone: "Open Space Nord" },
+
+            // Süd-Reihe 2er-Blöcke
+            { id: "AP-S1-6", label: "Platz 6", name: "Block Süd 1 (Platz 6)", zone: "Open Space Süd" },
+            { id: "AP-S1-5", label: "Platz 5", name: "Block Süd 1 (Platz 5)", zone: "Open Space Süd" },
+            { id: "AP-S2-L", label: "Platz Ort", name: "Block Süd 2 (Platz Ort)", zone: "Open Space Süd" },
+            { id: "AP-S2-3", label: "Platz 3", name: "Block Süd 2 (Platz 3)", zone: "Open Space Süd" },
+            { id: "AP-MK",   label: "MK", name: "Block Süd 3 (Melanie Kalmbach)", zone: "Open Space Süd" },
+            { id: "AP-DOME", label: "DF", name: "Block Süd 3 (Dominik Fabianski)", zone: "Open Space Süd" },
+
+            // Konferenz
+            { id: "KONF", label: "Konferenz", name: "Konferenztisch (12 Plätze)", zone: "Konferenzraum" }
+        ];
+
+        function toggleModal(id) {
+            document.getElementById(id).classList.toggle('hidden');
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById("toast");
+            document.getElementById("toastMsg").innerText = msg;
+            toast.classList.remove("hidden");
+            setTimeout(() => toast.classList.add("hidden"), 3500);
+        }
+
+        function toggleMapCollapse() {
+            const viewport = document.getElementById("mapViewport");
+            const btn = document.getElementById("btnCollapseMap");
+            if (viewport.classList.contains("hidden")) {
+                viewport.classList.remove("hidden");
+                btn.innerText = "Plan minimieren";
+            } else {
+                viewport.classList.add("hidden");
+                btn.innerText = "Plan maximieren";
+            }
+        }
+
+        async function loadData() {
+            try {
+                const res = await fetch(API_URL, { method: "GET", redirect: "follow" });
+                if (!res.ok) throw new Error("HTTP Fehler " + res.status);
+                appData = await res.json();
+                
+                updateKPIs();
+                populateMitarbeiterDatalist();
+                populateDeskSuggestions();
+                updateSvgDeskColors();
+                renderTable();
+            } catch (err) {
+                console.error("Fehler beim Laden:", err);
+                showToast("Fehler beim Laden der Sheet-Daten.");
+            }
+        }
+
+        function updateKPIs() {
+            const list = appData.hardware || [];
+            const countOffice = list.filter(h => h.Status === "Office").length;
+            const countAussen = list.filter(h => h.Status === "Aussendienst").length;
+            const countLager = list.filter(h => h.Status === "Lager").length;
+            const countArchiv = list.filter(h => h.Status === "Archiv").length;
+
+            document.getElementById("kpi-office").innerText = countOffice;
+            document.getElementById("kpi-aussen").innerText = countAussen;
+            document.getElementById("kpi-lager").innerText = countLager;
+            document.getElementById("kpi-archiv").innerText = countArchiv;
+        }
+
+        function populateMitarbeiterDatalist() {
+            const dl = document.getElementById("mitarbeiterList");
+            dl.innerHTML = "";
+            (appData.mitarbeiter || []).forEach(m => {
+                dl.innerHTML += `<option value="${m.Name}">${m.Abteilung ? '(' + m.Abteilung + ')' : ''}</option>`;
+            });
+        }
+
+        function populateDeskSuggestions() {
+            const dl = document.getElementById("deskSuggestions");
+            dl.innerHTML = "";
+            DESK_CONFIG.forEach(d => {
+                dl.innerHTML += `<option value="${d.label}">${d.name}</option>`;
+            });
+        }
+
+        // Farbliche Live-Aktualisierung im SVG
+        function updateSvgDeskColors() {
+            const hardwareList = appData.hardware || [];
+
+            DESK_CONFIG.forEach(desk => {
+                const deskEl = document.getElementById("svg-desk-" + desk.id);
+                if (!deskEl) return;
+
+                const searchTokens = [desk.id, desk.label, desk.name].map(t => t.toUpperCase());
+                const matchingHW = hardwareList.filter(h => 
+                    h.Status === "Office" && (
+                        (h.Standort && searchTokens.some(tok => h.Standort.toUpperCase().includes(tok))) ||
+                        (h.Bemerkung && searchTokens.some(tok => h.Bemerkung.toUpperCase().includes(tok)))
+                    )
+                );
+
+                const surface = deskEl.querySelector(".desk-surface");
+                const circle = deskEl.querySelector(".desk-status-circle");
+                const isOccupied = matchingHW.length > 0;
+
+                if (surface) {
+                    if (isOccupied) {
+                        surface.setAttribute("fill", "#F0F7FF");
+                        surface.setAttribute("stroke", "#00598C");
+                        surface.setAttribute("stroke-width", "2");
+                    } else {
+                        surface.setAttribute("fill", "#FFFFFF");
+                        surface.setAttribute("stroke", "#CBD5E1");
+                        surface.setAttribute("stroke-width", "1.5");
+                    }
+                }
+
+                if (circle && desk.id !== "AP-07") {
+                    circle.setAttribute("fill", isOccupied ? "#00598C" : "#10B981");
+                    if (isOccupied) circle.classList.add("active-pulse");
+                    else circle.classList.remove("active-pulse");
+                }
+            });
+        }
+
+        function handleDeskClick(deskId) {
+            activeSelectedDeskId = deskId;
+            const desk = DESK_CONFIG.find(d => d.id === deskId) || { id: deskId, label: deskId, name: deskId, zone: "Büro Neuss" };
+            const hardwareList = appData.hardware || [];
+
+            document.querySelectorAll(".floor-desk").forEach(el => el.classList.remove("selected"));
+            const currentEl = document.getElementById("svg-desk-" + deskId);
+            if (currentEl) currentEl.classList.add("selected");
+
+            const searchTokens = [desk.id, desk.label, desk.name].map(t => t.toUpperCase());
+            const matchingHW = hardwareList.filter(h => 
+                h.Status === "Office" && (
+                    (h.Standort && searchTokens.some(tok => h.Standort.toUpperCase().includes(tok))) ||
+                    (h.Bemerkung && searchTokens.some(tok => h.Bemerkung.toUpperCase().includes(tok)))
+                )
+            );
+
+            let assignedPersons = [...new Set(matchingHW.map(h => h.ZugewiesenAn).filter(Boolean))];
+            let personDisplay = assignedPersons.length > 0 ? assignedPersons.join(", ") : "Aktuell frei / unbesetzt";
+
+            document.getElementById("deskModalTitle").innerText = `${desk.label} • ${desk.name}`;
+            document.getElementById("deskModalZone").innerText = desk.zone;
+            document.getElementById("deskModalUser").innerText = personDisplay;
+            document.getElementById("deskModalHwCount").innerText = `${matchingHW.length} Gerät${matchingHW.length === 1 ? '' : 'e'}`;
+
+            const badge = document.getElementById("deskModalStatusBadge");
+            if (matchingHW.length > 0) {
+                badge.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-hg-blue";
+                badge.innerText = "Belegt";
+            } else {
+                badge.className = "text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700";
+                badge.innerText = "Frei";
+            }
+
+            const tbody = document.getElementById("deskModalHardwareList");
+            tbody.innerHTML = "";
+
+            if (matchingHW.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-3 text-center text-slate-400">Keine Hardware an diesem Platz vorhanden</td></tr>`;
+            } else {
+                matchingHW.forEach(h => {
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-50">
+                            <td class="p-2.5 font-mono font-bold text-hg-blue">${h.AssetTag || '-'}</td>
+                            <td class="p-2.5 font-semibold text-slate-900">${h.Modell || '-'}</td>
+                            <td class="p-2.5">${h.Kategorie || '-'}</td>
+                            <td class="p-2.5 font-mono text-slate-500">${h.Seriennummer || '-'}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            toggleModal("modalDeskInfo");
+        }
+
+        function filterTableByDesk() {
+            if (!activeSelectedDeskId) return;
+            const desk = DESK_CONFIG.find(d => d.id === activeSelectedDeskId);
+            setFilterStatus("Office");
+            document.getElementById("searchInput").value = desk ? desk.label : activeSelectedDeskId;
+            renderTable();
+            toggleModal("modalDeskInfo");
+            window.scrollTo({ top: document.querySelector("section.bg-white.rounded-3xl").offsetTop - 80, behavior: 'smooth' });
+        }
+
+        function assignHardwareToThisDesk() {
+            toggleModal("modalDeskInfo");
+            const desk = DESK_CONFIG.find(d => d.id === activeSelectedDeskId);
+            document.getElementById("newStandort").value = desk ? desk.label : activeSelectedDeskId;
+            document.getElementById("newStatus").value = "Office";
+            toggleModal("modalNewHardware");
+        }
+
+        function setFilterStatus(status) {
+            currentFilterStatus = status;
+
+            document.querySelectorAll(".tab-btn").forEach(btn => {
+                btn.className = "tab-btn px-3.5 py-1.5 rounded-xl text-slate-600 hover:text-slate-900 transition";
+            });
+            const activeTab = document.getElementById("tab-" + status);
+            if (activeTab) {
+                activeTab.className = "tab-btn px-3.5 py-1.5 rounded-xl bg-white text-slate-900 shadow-xs font-bold";
+            }
+
+            const mapSection = document.getElementById("officeMapSection");
+            mapSection.style.display = (status === "Office" || status === "ALL") ? "block" : "none";
+
+            document.querySelectorAll(".kpi-card").forEach(c => {
+                if (c.dataset.status === status) c.classList.add("ring-2", "ring-[#00598C]");
+                else c.classList.remove("ring-2", "ring-[#00598C]");
+            });
+
+            renderTable();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById("tblHardware");
+            const search = document.getElementById("searchInput").value.toLowerCase().trim();
+            const catFilter = document.getElementById("kategorieFilter").value;
+
+            document.getElementById("clearSearch").style.display = search ? "block" : "none";
+
+            let items = [...(appData.hardware || [])];
+
+            if (currentFilterStatus !== "ALL") items = items.filter(h => h.Status === currentFilterStatus);
+            if (catFilter) items = items.filter(h => h.Kategorie === catFilter);
+
+            if (search) {
+                items = items.filter(h => 
+                    (h.AssetTag && String(h.AssetTag).toLowerCase().includes(search)) ||
+                    (h.Modell && String(h.Modell).toLowerCase().includes(search)) ||
+                    (h.Seriennummer && String(h.Seriennummer).toLowerCase().includes(search)) ||
+                    (h.ZugewiesenAn && String(h.ZugewiesenAn).toLowerCase().includes(search)) ||
+                    (h.Standort && String(h.Standort).toLowerCase().includes(search)) ||
+                    (h.Bemerkung && String(h.Bemerkung).toLowerCase().includes(search))
+                );
+            }
+
+            tbody.innerHTML = "";
+            document.getElementById("tableCount").innerText = `${items.length} Geräte gelistet`;
+
+            if (items.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-10 text-center text-slate-400">Keine Hardware für diesen Filter vorhanden</td></tr>`;
+                return;
+            }
+
+            items.forEach(h => {
+                let badge = "";
+                if (h.Status === "Office") badge = `<span class="bg-blue-50 text-hg-blue border border-blue-200/60 px-2.5 py-0.5 rounded-full text-[10px] font-bold">🏢 Office</span>`;
+                else if (h.Status === "Aussendienst") badge = `<span class="bg-emerald-50 text-emerald-700 border border-emerald-200/60 px-2.5 py-0.5 rounded-full text-[10px] font-bold">🌐 Mobil</span>`;
+                else if (h.Status === "Lager") badge = `<span class="bg-amber-50 text-amber-700 border border-amber-200/60 px-2.5 py-0.5 rounded-full text-[10px] font-bold">📦 Im Lager</span>`;
+                else badge = `<span class="bg-slate-100 text-slate-600 border border-slate-200 px-2.5 py-0.5 rounded-full text-[10px] font-bold">🗄️ Archiv</span>`;
+
+                const deskBadge = h.Standort 
+                    ? `<span class="bg-slate-100 text-hg-blue font-mono font-bold px-2 py-0.5 rounded-md text-[10px] mr-1.5 border border-slate-200/60">${h.Standort}</span>` 
+                    : '';
+
+                const ownerDisplay = h.ZugewiesenAn 
+                    ? `${deskBadge}<span class="font-bold text-slate-900">${h.ZugewiesenAn}</span>`
+                    : `${deskBadge}<span class="text-slate-400 italic">Nicht zugewiesen</span>`;
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50/80 transition">
+                        <td class="px-6 py-3.5 font-mono font-bold text-hg-blue">${h.AssetTag || '-'}</td>
+                        <td class="px-6 py-3.5 font-semibold text-slate-900">
+                            <div>${h.Modell || '-'}</div>
+                            <div class="text-[10px] text-slate-400 font-normal">${h.Bemerkung || ''}</div>
+                        </td>
+                        <td class="px-6 py-3.5 font-medium">${h.Kategorie || '-'}</td>
+                        <td class="px-6 py-3.5 font-mono text-slate-600">${h.Seriennummer || '-'}</td>
+                        <td class="px-6 py-3.5">${badge}</td>
+                        <td class="px-6 py-3.5">${ownerDisplay}</td>
+                        <td class="px-6 py-3.5 text-slate-400 text-[11px]">${h.Ausgabedatum || '-'}</td>
+                        <td class="px-6 py-3.5 text-right">
+                            <button onclick='openActionModal(${JSON.stringify(h)})' class="text-xs bg-slate-100 hover:bg-hg-blue hover:text-white text-slate-700 px-3 py-1.5 rounded-xl font-semibold transition shadow-2xs">
+                                Ändern ⚙️
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function clearSearch() {
+            document.getElementById("searchInput").value = "";
+            renderTable();
+        }
+
+        function openActionModal(asset) {
+            document.getElementById("actionAssetId").value = asset.ID || "";
+            document.getElementById("actionAssetTag").value = asset.AssetTag || "";
+            document.getElementById("actionModell").value = asset.Modell || "";
+
+            document.getElementById("actionModalTitle").innerText = `${asset.Modell} (${asset.AssetTag})`;
+            document.getElementById("actionModalSub").innerText = `S/N: ${asset.Seriennummer || 'Keine'} | Status: ${asset.Status}`;
+
+            document.getElementById("actionStatus").value = asset.Status || "Office";
+            document.getElementById("actionOwner").value = asset.ZugewiesenAn || "";
+            document.getElementById("actionLocation").value = asset.Standort || "";
+            document.getElementById("actionDept").value = asset.Abteilung || "";
+            document.getElementById("actionNote").value = "";
+
+            toggleActionFields();
+            toggleModal("modalAction");
+        }
+
+        function toggleActionFields() {
+            const status = document.getElementById("actionStatus").value;
+            const isAssigned = (status === "Office" || status === "Aussendienst");
+            document.getElementById("boxAssignee").style.display = isAssigned ? "block" : "none";
+            document.getElementById("boxLocation").style.display = isAssigned ? "grid" : "none";
+        }
+
+        async function submitAssetAction(e) {
+            e.preventDefault();
+            const btn = document.getElementById("btnSubmitAction");
+            btn.disabled = true;
+            btn.innerText = "Speichere...";
+
+            const payload = {
+                action: "updateAssetStatus",
+                id: document.getElementById("actionAssetId").value,
+                assetTag: document.getElementById("actionAssetTag").value,
+                status: document.getElementById("actionStatus").value,
+                zugewiesenAn: document.getElementById("actionOwner").value,
+                standort: document.getElementById("actionLocation").value,
+                abteilung: document.getElementById("actionDept").value,
+                bemerkung: document.getElementById("actionNote").value,
+                statusChangeReason: "Status-Update: " + document.getElementById("actionStatus").value
+            };
+
+            await sendPost(payload, "Hardware-Status erfolgreich aktualisiert!");
+            btn.disabled = false;
+            btn.innerText = "Speichern";
+            toggleModal("modalAction");
+        }
+
+        async function submitNewAsset(e) {
+            e.preventDefault();
+            const btn = document.getElementById("btnSaveAsset");
+            btn.disabled = true;
+            btn.innerText = "Speichere...";
+
+            const payload = {
+                action: "createAsset",
+                assetTag: document.getElementById("newAssetTag").value.trim(),
+                kategorie: document.getElementById("newKategorie").value,
+                modell: document.getElementById("newModell").value.trim(),
+                seriennummer: document.getElementById("newSerial").value.trim(),
+                status: document.getElementById("newStatus").value,
+                standort: document.getElementById("newStandort").value.trim(),
+                zugewiesenAn: document.getElementById("newOwner").value.trim(),
+                bemerkung: document.getElementById("newBemerkung").value.trim()
+            };
+
+            await sendPost(payload, "Neues Asset angelegt!");
+            btn.disabled = false;
+            btn.innerText = "Asset anlegen";
+            document.getElementById("newAssetTag").value = "";
+            document.getElementById("newModell").value = "";
+            document.getElementById("newSerial").value = "";
+            toggleModal("modalNewHardware");
+        }
+
+        async function submitNewMitarbeiter(e) {
+            e.preventDefault();
+            const payload = {
+                action: "addMitarbeiter",
+                name: document.getElementById("maName").value.trim(),
+                abteilung: document.getElementById("maAbt").value.trim(),
+                standort: document.getElementById("maLoc").value.trim()
+            };
+            await sendPost(payload, "Mitarbeiter hinzugefügt!");
+            toggleModal("modalMitarbeiter");
+        }
+
+        async function sendPost(payload, msg) {
+            try {
+                await fetch(API_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify(payload)
+                });
+                showToast(msg);
+                setTimeout(loadData, 1200);
+            } catch (err) {
+                alert("Fehler bei der Übertragung.");
+                console.error(err);
+            }
+        }
+
+        function printSingleReceipt() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            const tag = document.getElementById("actionAssetTag").value;
+            const model = document.getElementById("actionModell").value;
+            const owner = document.getElementById("actionOwner").value || "Nicht zugewiesen";
+            const loc = document.getElementById("actionLocation").value || "Standort";
+            const status = document.getElementById("actionStatus").value;
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(16);
+            doc.text("Hergarten Gruppe | IT-Hardware Nachweis", 14, 20);
+
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Mitarbeiter: ${owner}`, 14, 30);
+            doc.text(`Einsatzbereich: ${status} (${loc})`, 14, 36);
+            doc.text(`Datum: ${new Date().toLocaleDateString("de-DE")}`, 14, 42);
+
+            doc.setLineWidth(0.4);
+            doc.line(14, 46, 196, 46);
+
+            doc.setFont("helvetica", "bold");
+            doc.text("Gerätedaten:", 14, 54);
+
+            doc.setFontSize(9);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Inventar-Nr / Asset-Tag: ${tag}`, 14, 62);
+            doc.text(`Modell / Bezeichnung: ${model}`, 14, 68);
+
+            doc.setFontSize(8);
+            const notice = "Der Unterzeichnende bestätigt den ordnungsgemäßen Empfang der IT-Hardware. Die Geräte sind sorgfältig zu behandeln und dienen vorrangig betrieblichen Zwecken. Bei Ausscheiden oder Aufforderung ist die Hardware unaufgefordert an die IT-Abteilung zurückzugeben.";
+            doc.text(doc.splitTextToSize(notice, 180), 14, 85);
+
+            doc.line(14, 115, 90, 115);
+            doc.line(120, 115, 196, 115);
+            doc.text("Unterschrift Mitarbeiter", 14, 120);
+            doc.text("Unterschrift IT-Verwaltung", 120, 120);
+
+            doc.save(`Uebergabe_${tag}_${owner.replace(/\s+/g, '_')}.pdf`);
+        }
+
+        function exportCSV() {
+            const data = appData.hardware || [];
+            if (data.length === 0) return alert("Keine Daten zum Exportieren");
+            const headers = Object.keys(data[0]);
+            let csv = "\uFEFF" + headers.join(";") + "\n";
+            data.forEach(r => {
+                csv += headers.map(h => `"${(r[h] || '').toString().replace(/"/g, '""')}"`).join(";") + "\n";
+            });
+            const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `Hergarten_IT_Hardware_${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+        }
+
+        loadData();
+    </script>
+</body>
+</html>
