@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hergarten Gruppe | IT-Hardware Management</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        hg: {
+                            blue: '#00598C',
+                            dark: '#003F64',
+                            light: '#A9BDD7',
+                            bg: '#F4F7FA'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-hg-bg text-slate-800 min-h-screen flex flex-col font-sans">
+
+    <!-- Toast Banner -->
+    <div id="toast" class="fixed top-5 right-5 z-50 hidden bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-lg font-medium transition-all duration-300">
+        <span id="toastMsg">Aktion erfolgreich!</span>
+    </div>
+
+    <!-- Header mit Hergarten Signet -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-20 shadow-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3.5">
+                <!-- Hergarten Signet -->
+                <img src="logo.png" alt="Hergarten Gruppe" class="h-10 w-10 object-contain drop-shadow-xs transition-transform hover:scale-105" onerror="this.style.display='none'">
+                <div class="border-l border-slate-200 pl-3.5">
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-base font-bold text-slate-900 leading-none">IT-Hardware Manager</h1>
+                        <span class="bg-slate-100 text-slate-600 text-[10px] font-semibold px-2 py-0.5 rounded-md">v1.0</span>
+                    </div>
+                    <p class="text-xs text-[#00598C] font-semibold tracking-wide uppercase mt-1">Hergarten Gruppe</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="toggleModal('modalMitarbeiter')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 px-3 rounded-lg font-medium transition">
+                    + Mitarbeiter
+                </button>
+                <button onclick="toggleModal('modalNewHardware')" class="text-xs bg-[#00598C] hover:bg-[#003F64] text-white py-2 px-3.5 rounded-lg font-semibold transition shadow-xs flex items-center gap-1.5">
+                    <span>+ Hardware erfassen</span>
+                </button>
+                <button onclick="loadData()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 p-2 rounded-lg transition" title="Aktualisieren">
+                    🔄
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+
+        <!-- KPI Status-Karten (als Filter anklickbar) -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div onclick="setFilterStatus('Office')" class="kpi-card bg-white p-5 rounded-xl border border-slate-200 shadow-sm cursor-pointer hover:border-hg-blue transition relative overflow-hidden" data-status="Office">
+                <div class="flex justify-between items-start">
+                    <span class="text-xs font-semibold text-slate-500 uppercase">🏢 Office</span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+                </div>
+                <p id="kpi-office" class="text-2xl font-bold text-slate-900 mt-2">0</p>
+                <p class="text-[11px] text-slate-400 mt-0.5">Vor Ort im Büro / Werk</p>
+            </div>
+
+            <div onclick="setFilterStatus('Aussendienst')" class="kpi-card bg-white p-5 rounded-xl border border-slate-200 shadow-sm cursor-pointer hover:border-emerald-500 transition relative overflow-hidden" data-status="Aussendienst">
+                <div class="flex justify-between items-start">
+                    <span class="text-xs font-semibold text-slate-500 uppercase">🌐 Außerhalb</span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                </div>
+                <p id="kpi-aussen" class="text-2xl font-bold text-emerald-600 mt-2">0</p>
+                <p class="text-[11px] text-slate-400 mt-0.5">Homeoffice, Handy, LKW</p>
+            </div>
+
+            <div onclick="setFilterStatus('Lager')" class="kpi-card bg-white p-5 rounded-xl border border-slate-200 shadow-sm cursor-pointer hover:border-amber-500 transition relative overflow-hidden" data-status="Lager">
+                <div class="flex justify-between items-start">
+                    <span class="text-xs font-semibold text-slate-500 uppercase">📦 IT-Lager</span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                </div>
+                <p id="kpi-lager" class="text-2xl font-bold text-amber-600 mt-2">0</p>
+                <p class="text-[11px] text-slate-400 mt-0.5">Sofort einsatzbereit</p>
+            </div>
+
+            <div onclick="setFilterStatus('Archiv')" class="kpi-card bg-white p-5 rounded-xl border border-slate-200 shadow-sm cursor-pointer hover:border-slate-400 transition relative overflow-hidden" data-status="Archiv">
+                <div class="flex justify-between items-start">
+                    <span class="text-xs font-semibold text-slate-500 uppercase">🗄️ Archiv</span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+                </div>
+                <p id="kpi-archiv" class="text-2xl font-bold text-slate-500 mt-2">0</p>
+                <p class="text-[11px] text-slate-400 mt-0.5">Defekt, Altbestand, Ausgemustert</p>
+            </div>
+        </div>
+
+        <!-- Hauptansicht: Tabellenbereich -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            
+            <!-- Toolbar & Filter Tabs -->
+            <div class="px-6 py-4 border-b border-slate-200 flex flex-wrap gap-4 justify-between items-center bg-slate-50/50">
+                
+                <!-- Status Reiter -->
+                <div class="flex items-center gap-1 bg-slate-200/60 p-1 rounded-xl text-xs font-semibold">
+                    <button onclick="setFilterStatus('ALL')" id="tab-ALL" class="tab-btn px-3 py-1.5 rounded-lg bg-white text-slate-900 shadow-sm">Alle Geräte</button>
+                    <button onclick="setFilterStatus('Office')" id="tab-Office" class="tab-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900">🏢 Office</button>
+                    <button onclick="setFilterStatus('Aussendienst')" id="tab-Aussendienst" class="tab-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900">🌐 Außerhalb</button>
+                    <button onclick="setFilterStatus('Lager')" id="tab-Lager" class="tab-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900">📦 Lager</button>
+                    <button onclick="setFilterStatus('Archiv')" id="tab-Archiv" class="tab-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900">🗄️ Archiv</button>
+                </div>
+
+                <!-- Suchfeld & Filter -->
+                <div class="flex items-center gap-2 flex-1 max-w-md justify-end">
+                    <div class="relative w-full max-w-xs">
+                        <input type="text" id="searchInput" oninput="renderTable()" placeholder="🔍 S/N, Tag, Person, Gerät..." class="w-full bg-white border border-slate-200 rounded-lg pl-3 pr-8 py-1.5 text-xs focus:ring-2 focus:ring-hg-blue focus:outline-none">
+                        <span id="clearSearch" onclick="clearSearch()" class="hidden absolute right-2.5 top-1.5 text-slate-400 cursor-pointer text-xs">✕</span>
+                    </div>
+                    <select id="kategorieFilter" onchange="renderTable()" class="bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-700">
+                        <option value="">Alle Kategorien</option>
+                        <option value="Notebook">Notebook</option>
+                        <option value="PC / Desktop">PC / Desktop</option>
+                        <option value="Monitor">Monitor</option>
+                        <option value="Smartphone">Smartphone</option>
+                        <option value="Tablet / Scanner">Tablet / Scanner</option>
+                        <option value="Drucker">Drucker</option>
+                        <option value="Zubehör">Zubehör / Docking</option>
+                    </select>
+                    <button onclick="exportCSV()" class="border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-medium transition" title="Als CSV herunterladen">
+                        📥 CSV
+                    </button>
+                </div>
+            </div>
+
+            <!-- Asset Table -->
+            <div class="overflow-x-auto min-h-[350px]">
+                <table class="w-full text-left text-xs text-slate-600">
+                    <thead class="bg-slate-100 text-slate-700 font-semibold uppercase tracking-wider border-b border-slate-200">
+                        <tr>
+                            <th class="px-5 py-3.5">Asset-Tag</th>
+                            <th class="px-5 py-3.5">Gerät / Modell</th>
+                            <th class="px-5 py-3.5">Kategorie</th>
+                            <th class="px-5 py-3.5">Seriennummer (S/N)</th>
+                            <th class="px-5 py-3.5">Status</th>
+                            <th class="px-5 py-3.5">Aktueller Besitzer / Ort</th>
+                            <th class="px-5 py-3.5">Datum</th>
+                            <th class="px-5 py-3.5 text-right">Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tblHardware" class="divide-y divide-slate-100 font-normal">
+                        <tr><td colspan="8" class="px-5 py-8 text-center text-slate-400">Hardware wird geladen...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Footer Statusanzeige -->
+            <div class="px-6 py-3 border-t border-slate-100 bg-slate-50/50 flex justify-between items-center text-xs text-slate-500">
+                <span id="tableCount">0 Geräte angezeigt</span>
+                <span class="font-medium text-hg-blue">Standort-Hub: Neuss / Holzheim</span>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal: Neues Hardware Asset erfassen -->
+    <div id="modalNewHardware" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="text-base font-bold text-slate-900">Neues Hardware-Asset erfassen</h3>
+                <button onclick="toggleModal('modalNewHardware')" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+            </div>
+            
+            <form onsubmit="submitNewAsset(event)" class="space-y-3.5">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 uppercase mb-1">Asset-Tag / Inventar-Nr</label>
+                        <input type="text" id="newAssetTag" placeholder="z.B. IT-0482" required class="w-full border rounded-lg p-2 text-xs font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 uppercase mb-1">Kategorie</label>
+                        <select id="newKategorie" required class="w-full border rounded-lg p-2 text-xs bg-white">
+                            <option value="Notebook">Notebook</option>
+                            <option value="PC / Desktop">PC / Desktop</option>
+                            <option value="Monitor">Monitor</option>
+                            <option value="Smartphone">Smartphone</option>
+                            <option value="Tablet / Scanner">Tablet / Scanner</option>
+                            <option value="Drucker">Drucker</option>
+                            <option value="Zubehör">Zubehör / Docking</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-600 uppercase mb-1">Hersteller & Modell</label>
+                    <input type="text" id="newModell" placeholder="z.B. Lenovo ThinkPad T14 Gen 4, Dell 27 Zoll WQHD" required class="w-full border rounded-lg p-2 text-xs">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 uppercase mb-1">Seriennummer (S/N)</label>
+                        <input type="text" id="newSerial" placeholder="z.B. PF44A9X2" required class="w-full border rounded-lg p-2 text-xs font-mono">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 uppercase mb-1">Start-Status</label>
+                        <select id="newStatus" class="w-full border rounded-lg p-2 text-xs bg-white">
+                            <option value="Lager">📦 Im Lager (Frei)</option>
+                            <option value="Office">🏢 Office (Vor Ort)</option>
+                            <option value="Aussendienst">🌐 Außerhalb (Homeoffice / Mobil)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 uppercase mb-1">Standort</label>
+                        <input type="text" id="newStandort" placeholder="z.B. Holzheim, Neuss, Lager IT" value="Lager IT" class="w-full border rounded-lg p-2 text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 uppercase mb-1">Zugewiesen an (optional)</label>
+                        <input type="text" id="newOwner" list="mitarbeiterList" placeholder="Name..." class="w-full border rounded-lg p-2 text-xs">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-600 uppercase mb-1">Bemerkung / Specs</label>
+                    <input type="text" id="newBemerkung" placeholder="z.B. 32GB RAM, 1TB SSD, Netzkabel & Tasche" class="w-full border rounded-lg p-2 text-xs">
+                </div>
+
+                <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                    <button type="button" onclick="toggleModal('modalNewHardware')" class="px-4 py-2 text-xs text-slate-600 hover:bg-slate-100 rounded-lg">Abbrechen</button>
+                    <button type="submit" id="btnSaveAsset" class="px-4 py-2 text-xs bg-[#00598C] text-white font-semibold rounded-lg hover:bg-[#003F64] transition">Asset anlegen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Zuweisen / Status ändern / Verschieben -->
+    <div id="modalAction" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4">
+            <div class="border-b border-slate-100 pb-3 flex justify-between items-start">
+                <div>
+                    <h3 id="actionModalTitle" class="text-base font-bold text-slate-900">Hardware bewegen</h3>
+                    <p id="actionModalSub" class="text-xs text-slate-500 font-mono mt-0.5">-</p>
+                </div>
+                <button onclick="toggleModal('modalAction')" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+            </div>
+
+            <form onsubmit="submitAssetAction(event)" class="space-y-3.5">
+                <input type="hidden" id="actionAssetId">
+                <input type="hidden" id="actionAssetTag">
+                <input type="hidden" id="actionModell">
+
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-600 uppercase mb-1">Neuer Status</label>
+                    <select id="actionStatus" onchange="toggleActionFields()" required class="w-full border rounded-lg p-2 text-xs bg-white">
+                        <option value="Office">🏢 Aktive Hardware im Office (Arbeitsplatz)</option>
+                        <option value="Aussendienst">🌐 Aktive Hardware Außerhalb (Homeoffice / Mobil / LKW)</option>
+                        <option value="Lager">📦 Zurück ins IT-Lager buchen</option>
+                        <option value="Archiv">🗄️ Archivieren (Defekt / Ausgemustert / Verkauft)</option>
+                    </select>
+                </div>
+
+                <div id="boxAssignee">
+                    <label class="block text-[11px] font-semibold text-slate-600 uppercase mb-1">Mitarbeiter / Nutzer</label>
+                    <input type="text" id="actionOwner" list="mitarbeiterList" placeholder="Name auswählen..." class="w-full border rounded-lg p-2 text-xs">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3" id="boxLocation">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 uppercase mb-1">Standort</label>
+                        <input type="text" id="actionLocation" placeholder="z.B. Neuss, Holzheim, Homeoffice" class="w-full border rounded-lg p-2 text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-600 uppercase mb-1">Abteilung</label>
+                        <input type="text" id="actionDept" placeholder="z.B. Spedition, IT, Buchhaltung" class="w-full border rounded-lg p-2 text-xs">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-600 uppercase mb-1">Grund / Bemerkung</label>
+                    <input type="text" id="actionNote" placeholder="z.B. Ausgabe Homeoffice, Defektes Display, Leasing-Ende" class="w-full border rounded-lg p-2 text-xs">
+                </div>
+
+                <div class="flex justify-between items-center pt-3 border-t border-slate-100">
+                    <button type="button" onclick="printSingleReceipt()" class="text-xs text-[#00598C] hover:underline flex items-center gap-1 font-medium">
+                        📄 Beleg (PDF)
+                    </button>
+                    <div class="flex gap-2">
+                        <button type="button" onclick="toggleModal('modalAction')" class="px-4 py-2 text-xs text-slate-600 hover:bg-slate-100 rounded-lg">Abbrechen</button>
+                        <button type="submit" id="btnSubmitAction" class="px-4 py-2 text-xs bg-[#00598C] text-white font-semibold rounded-lg hover:bg-[#003F64] transition">Speichern</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Neuer Mitarbeiter -->
+    <div id="modalMitarbeiter" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 space-y-4">
+            <h3 class="text-base font-bold text-slate-900">Mitarbeiter hinzufügen</h3>
+            <form onsubmit="submitNewMitarbeiter(event)" class="space-y-3">
+                <input type="text" id="maName" placeholder="Vollständiger Name" required class="w-full border rounded-lg p-2 text-xs">
+                <input type="text" id="maAbt" placeholder="Abteilung (z.B. Fuhrpark, Verwaltung)" required class="w-full border rounded-lg p-2 text-xs">
+                <input type="text" id="maLoc" placeholder="Standort (z.B. Holzheim)" value="Holzheim" required class="w-full border rounded-lg p-2 text-xs">
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="toggleModal('modalMitarbeiter')" class="px-4 py-2 text-xs text-slate-600 hover:bg-slate-100 rounded-lg">Abbrechen</button>
+                    <button type="submit" class="px-4 py-2 text-xs bg-[#00598C] text-white font-semibold rounded-lg hover:bg-[#003F64]">Speichern</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Datalist für Mitarbeiter-Schnellsuche -->
+    <datalist id="mitarbeiterList"></datalist>
+
+    <script>
+        // DEINE GOOGLE APPS SCRIPT WEB-APP URL HIER EINSETZEN:
+        const API_URL = "https://script.google.com/macros/s/AKfycbwTMg_29PbkdZKGu_goMcqaHsFdqf_HuhD7aYuwIJ_DFKu4ZlILrSd2DHMykLMBwkZd/exec";
+
+        let appData = { hardware: [], mitarbeiter: [], historie: [] };
+        let currentFilterStatus = "ALL";
+
+        function toggleModal(id) {
+            document.getElementById(id).classList.toggle('hidden');
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById("toast");
+            document.getElementById("toastMsg").innerText = msg;
+            toast.classList.remove("hidden");
+            setTimeout(() => toast.classList.add("hidden"), 3500);
+        }
+
+        async function loadData() {
+            try {
+                const res = await fetch(API_URL, { method: "GET", redirect: "follow" });
+                if (!res.ok) throw new Error("HTTP Fehler " + res.status);
+                appData = await res.json();
+                
+                updateKPIs();
+                populateMitarbeiterDatalist();
+                renderTable();
+            } catch (err) {
+                console.error("Fehler beim Abruf:", err);
+                showToast("Fehler beim Laden der Daten aus dem Sheet.");
+            }
+        }
+
+        function updateKPIs() {
+            const list = appData.hardware || [];
+            const countOffice = list.filter(h => h.Status === "Office").length;
+            const countAussen = list.filter(h => h.Status === "Aussendienst").length;
+            const countLager = list.filter(h => h.Status === "Lager").length;
+            const countArchiv = list.filter(h => h.Status === "Archiv").length;
+
+            document.getElementById("kpi-office").innerText = countOffice;
+            document.getElementById("kpi-aussen").innerText = countAussen;
+            document.getElementById("kpi-lager").innerText = countLager;
+            document.getElementById("kpi-archiv").innerText = countArchiv;
+        }
+
+        function populateMitarbeiterDatalist() {
+            const dl = document.getElementById("mitarbeiterList");
+            dl.innerHTML = "";
+            (appData.mitarbeiter || []).forEach(m => {
+                dl.innerHTML += `<option value="${m.Name}">${m.Abteilung ? '(' + m.Abteilung + ')' : ''}</option>`;
+            });
+        }
+
+        function setFilterStatus(status) {
+            currentFilterStatus = status;
+
+            // Tabs UI aktualisieren
+            document.querySelectorAll(".tab-btn").forEach(btn => {
+                btn.className = "tab-btn px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900";
+            });
+            const activeTab = document.getElementById("tab-" + status);
+            if (activeTab) {
+                activeTab.className = "tab-btn px-3 py-1.5 rounded-lg bg-white text-slate-900 shadow-sm font-bold";
+            }
+
+            // Cards UI hervorheben
+            document.querySelectorAll(".kpi-card").forEach(c => {
+                if (c.dataset.status === status) {
+                    c.classList.add("ring-2", "ring-[#00598C]");
+                } else {
+                    c.classList.remove("ring-2", "ring-[#00598C]");
+                }
+            });
+
+            renderTable();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById("tblHardware");
+            const search = document.getElementById("searchInput").value.toLowerCase().trim();
+            const catFilter = document.getElementById("kategorieFilter").value;
+
+            document.getElementById("clearSearch").style.display = search ? "block" : "none";
+
+            let items = [...(appData.hardware || [])];
+
+            // 1. Status Filter
+            if (currentFilterStatus !== "ALL") {
+                items = items.filter(h => h.Status === currentFilterStatus);
+            }
+
+            // 2. Kategorie Filter
+            if (catFilter) {
+                items = items.filter(h => h.Kategorie === catFilter);
+            }
+
+            // 3. Suche
+            if (search) {
+                items = items.filter(h => 
+                    (h.AssetTag && String(h.AssetTag).toLowerCase().includes(search)) ||
+                    (h.Modell && String(h.Modell).toLowerCase().includes(search)) ||
+                    (h.Seriennummer && String(h.Seriennummer).toLowerCase().includes(search)) ||
+                    (h.ZugewiesenAn && String(h.ZugewiesenAn).toLowerCase().includes(search)) ||
+                    (h.Standort && String(h.Standort).toLowerCase().includes(search)) ||
+                    (h.Bemerkung && String(h.Bemerkung).toLowerCase().includes(search))
+                );
+            }
+
+            tbody.innerHTML = "";
+            document.getElementById("tableCount").innerText = `${items.length} Geräte gefunden`;
+
+            if (items.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="px-5 py-8 text-center text-slate-400">Keine Hardware für diesen Filter vorhanden</td></tr>`;
+                return;
+            }
+
+            items.forEach(h => {
+                let badge = "";
+                if (h.Status === "Office") {
+                    badge = `<span class="bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-0.5 rounded-full text-[10px] font-bold">🏢 Office</span>`;
+                } else if (h.Status === "Aussendienst") {
+                    badge = `<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 rounded-full text-[10px] font-bold">🌐 Außerhalb</span>`;
+                } else if (h.Status === "Lager") {
+                    badge = `<span class="bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-0.5 rounded-full text-[10px] font-bold">📦 Im Lager</span>`;
+                } else {
+                    badge = `<span class="bg-slate-100 text-slate-600 border border-slate-200 px-2.5 py-0.5 rounded-full text-[10px] font-bold">🗄️ Archiviert</span>`;
+                }
+
+                const ownerDisplay = h.ZugewiesenAn 
+                    ? `<span class="font-semibold text-slate-900">${h.ZugewiesenAn}</span> <span class="text-slate-400">(${h.Standort || 'Standort'})</span>`
+                    : `<span class="text-slate-400 italic">${h.Standort || 'Lager'}</span>`;
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50/80 transition">
+                        <td class="px-5 py-3 font-mono font-bold text-[#00598C]">${h.AssetTag || '-'}</td>
+                        <td class="px-5 py-3 font-medium text-slate-900">
+                            <div>${h.Modell || '-'}</div>
+                            <div class="text-[10px] text-slate-400">${h.Bemerkung || ''}</div>
+                        </td>
+                        <td class="px-5 py-3">${h.Kategorie || '-'}</td>
+                        <td class="px-5 py-3 font-mono text-slate-600">${h.Seriennummer || '-'}</td>
+                        <td class="px-5 py-3">${badge}</td>
+                        <td class="px-5 py-3">${ownerDisplay}</td>
+                        <td class="px-5 py-3 text-slate-400 text-[11px]">${h.Ausgabedatum || '-'}</td>
+                        <td class="px-5 py-3 text-right">
+                            <button onclick='openActionModal(${JSON.stringify(h)})' class="text-xs bg-slate-100 hover:bg-[#00598C] hover:text-white text-slate-700 px-2.5 py-1 rounded-lg font-medium transition shadow-sm">
+                                Ändern / Zuweisen ⚙️
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function clearSearch() {
+            document.getElementById("searchInput").value = "";
+            renderTable();
+        }
+
+        function openActionModal(asset) {
+            document.getElementById("actionAssetId").value = asset.ID || "";
+            document.getElementById("actionAssetTag").value = asset.AssetTag || "";
+            document.getElementById("actionModell").value = asset.Modell || "";
+
+            document.getElementById("actionModalTitle").innerText = `${asset.Modell} (${asset.AssetTag})`;
+            document.getElementById("actionModalSub").innerText = `S/N: ${asset.Seriennummer || 'Keine'} | Status: ${asset.Status}`;
+
+            document.getElementById("actionStatus").value = asset.Status || "Office";
+            document.getElementById("actionOwner").value = asset.ZugewiesenAn || "";
+            document.getElementById("actionLocation").value = asset.Standort || "";
+            document.getElementById("actionDept").value = asset.Abteilung || "";
+            document.getElementById("actionNote").value = "";
+
+            toggleActionFields();
+            toggleModal("modalAction");
+        }
+
+        function toggleActionFields() {
+            const status = document.getElementById("actionStatus").value;
+            const isAssigned = (status === "Office" || status === "Aussendienst");
+            document.getElementById("boxAssignee").style.display = isAssigned ? "block" : "none";
+            document.getElementById("boxLocation").style.display = isAssigned ? "grid" : "none";
+        }
+
+        async function submitAssetAction(e) {
+            e.preventDefault();
+            const btn = document.getElementById("btnSubmitAction");
+            btn.disabled = true;
+            btn.innerText = "Speichere...";
+
+            const payload = {
+                action: "updateAssetStatus",
+                id: document.getElementById("actionAssetId").value,
+                assetTag: document.getElementById("actionAssetTag").value,
+                status: document.getElementById("actionStatus").value,
+                zugewiesenAn: document.getElementById("actionOwner").value,
+                standort: document.getElementById("actionLocation").value,
+                abteilung: document.getElementById("actionDept").value,
+                bemerkung: document.getElementById("actionNote").value,
+                statusChangeReason: "Status-Update: " + document.getElementById("actionStatus").value
+            };
+
+            await sendPost(payload, "Hardware-Status erfolgreich aktualisiert!");
+            btn.disabled = false;
+            btn.innerText = "Speichern";
+            toggleModal("modalAction");
+        }
+
+        async function submitNewAsset(e) {
+            e.preventDefault();
+            const btn = document.getElementById("btnSaveAsset");
+            btn.disabled = true;
+            btn.innerText = "Speichere...";
+
+            const payload = {
+                action: "createAsset",
+                assetTag: document.getElementById("newAssetTag").value.trim(),
+                kategorie: document.getElementById("newKategorie").value,
+                modell: document.getElementById("newModell").value.trim(),
+                seriennummer: document.getElementById("newSerial").value.trim(),
+                status: document.getElementById("newStatus").value,
+                standort: document.getElementById("newStandort").value.trim(),
+                zugewiesenAn: document.getElementById("newOwner").value.trim(),
+                bemerkung: document.getElementById("newBemerkung").value.trim()
+            };
+
+            await sendPost(payload, "Neues Asset angelegt!");
+            btn.disabled = false;
+            btn.innerText = "Asset anlegen";
+            document.getElementById("newAssetTag").value = "";
+            document.getElementById("newModell").value = "";
+            document.getElementById("newSerial").value = "";
+            toggleModal("modalNewHardware");
+        }
+
+        async function submitNewMitarbeiter(e) {
+            e.preventDefault();
+            const payload = {
+                action: "addMitarbeiter",
+                name: document.getElementById("maName").value.trim(),
+                abteilung: document.getElementById("maAbt").value.trim(),
+                standort: document.getElementById("maLoc").value.trim()
+            };
+            await sendPost(payload, "Mitarbeiter hinzugefügt!");
+            toggleModal("modalMitarbeiter");
+        }
+
+        async function sendPost(payload, msg) {
+            try {
+                await fetch(API_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify(payload)
+                });
+                showToast(msg);
+                setTimeout(loadData, 1200);
+            } catch (err) {
+                alert("Fehler bei der Übertragung.");
+                console.error(err);
+            }
+        }
+
+        // PDF Übergabeprotokoll erzeugen
+        function printSingleReceipt() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            const tag = document.getElementById("actionAssetTag").value;
+            const model = document.getElementById("actionModell").value;
+            const owner = document.getElementById("actionOwner").value || "Nicht zugewiesen";
+            const loc = document.getElementById("actionLocation").value || "Standort";
+            const status = document.getElementById("actionStatus").value;
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(16);
+            doc.text("Hergarten Gruppe | IT-Hardware Nachweis", 14, 20);
+
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Mitarbeiter: ${owner}`, 14, 30);
+            doc.text(`Einsatzbereich: ${status} (${loc})`, 14, 36);
+            doc.text(`Datum: ${new Date().toLocaleDateString("de-DE")}`, 14, 42);
+
+            doc.setLineWidth(0.4);
+            doc.line(14, 46, 196, 46);
+
+            doc.setFont("helvetica", "bold");
+            doc.text("Gerätedaten:", 14, 54);
+
+            doc.setFontSize(9);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Inventar-Nr / Asset-Tag: ${tag}`, 14, 62);
+            doc.text(`Modell / Bezeichnung: ${model}`, 14, 68);
+
+            doc.setFontSize(8);
+            const notice = "Der Unterzeichnende bestätigt den ordnungsgemäßen Empfang der IT-Hardware. Die Geräte sind sorgfältig zu behandeln und dienen vorrangig betrieblichen Zwecken. Bei Ausscheiden oder Aufforderung ist die Hardware unaufgefordert an die IT-Abteilung zurückzugeben.";
+            doc.text(doc.splitTextToSize(notice, 180), 14, 85);
+
+            doc.line(14, 115, 90, 115);
+            doc.line(120, 115, 196, 115);
+            doc.text("Unterschrift Mitarbeiter", 14, 120);
+            doc.text("Unterschrift IT-Verwaltung", 120, 120);
+
+            doc.save(`Uebergabe_${tag}_${owner.replace(/\s+/g, '_')}.pdf`);
+        }
+
+        function exportCSV() {
+            const data = appData.hardware || [];
+            if (data.length === 0) return alert("Keine Daten zum Exportieren");
+            const headers = Object.keys(data[0]);
+            let csv = "\uFEFF" + headers.join(";") + "\n";
+            data.forEach(r => {
+                csv += headers.map(h => `"${(r[h] || '').toString().replace(/"/g, '""')}"`).join(";") + "\n";
+            });
+            const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `Hergarten_IT_Hardware_${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+        }
+
+        loadData();
+    </script>
+</body>
+</html>
